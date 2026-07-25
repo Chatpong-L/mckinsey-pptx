@@ -869,6 +869,107 @@ def add_quote_breather(prs, *,
     return slide
 
 
+# ---------- 4 · audience value map ----------
+
+def add_audience_map(prs, *,
+                     title: str,
+                     takeaway: Optional[str] = None,
+                     rows: Sequence[dict],
+                     offer: Optional[str] = None,
+                     page_number=None, section_marker=None,
+                     source=None, footnote=None,
+                     theme: Theme = MAX_THEME):
+    """Seat-by-seat value map. rows: [{icon, who, detail, value,
+    stops:[1-6], key_stop}] — stops render as the six route-map circles with
+    the relevant ones lit and the single don't-miss stop in cyan."""
+    slide = blank_slide(prs)
+    add_chrome(slide, title=title, theme=theme, page_number=page_number,
+               section_marker=section_marker, source=source, footnote=footnote)
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+    if takeaway:
+        takeaway_line(slide, takeaway, theme)
+
+    ml = layout.margin_left_in
+    right = layout.slide_width_in - layout.margin_right_in
+    chips_x = 10.45
+    top = 1.72
+    # column headers
+    for x, label in ((ml + 0.85, "WHO YOU ARE"),
+                     (4.55, "TONIGHT'S 80/20"),
+                     (chips_x, "YOUR STOPS")):
+        tb = add_textbox(slide, x, top, 2.6, 0.26)
+        write_paragraph(tb.text_frame, label, size=typo.small_size,
+                        color=pal.footer_gray, family=typo.family, first=True)
+    add_line(slide, ml, top + 0.34, right, top + 0.34,
+             color=pal.dark_navy, width_pt=1.0)
+
+    row_h = 0.96
+    y = top + 0.44
+    for i, r in enumerate(rows):
+        cy = y + row_h / 2
+        if r.get("icon") and os.path.exists(r["icon"]):
+            slide_icon(slide, r["icon"], ml, cy - 0.29, 0.58)
+        tb = add_textbox(slide, ml + 0.85, cy - 0.42, 3.45, 0.5,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, r["who"], size=typo.body_size + 2,
+                        bold=True, color=pal.dark_navy, family=typo.family,
+                        first=True)
+        enable_text_shrink(tb.text_frame)
+        if r.get("detail"):
+            tb = add_textbox(slide, ml + 0.85, cy + 0.10, 3.45, 0.30)
+            write_paragraph(tb.text_frame, r["detail"],
+                            size=typo.small_size, color=pal.footer_gray,
+                            family=typo.family, first=True)
+            enable_text_shrink(tb.text_frame)
+        tb = add_textbox(slide, 4.55, cy - 0.44, 5.55, 0.92,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, r["value"], size=typo.body_size,
+                        color=pal.text_dark, family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
+        # six stop circles, lit per row
+        d = 0.34
+        gap = 0.075
+        stops = set(r.get("stops", ()))
+        key_stop = r.get("key_stop")
+        for s_i in range(1, 7):
+            sx = chips_x + (s_i - 1) * (d + gap)
+            if s_i == key_stop:
+                fill, txt = pal.bright_blue, pal.white
+                add_oval(slide, sx, cy - d / 2, d, d, fill=fill)
+            elif s_i in stops:
+                fill, txt = pal.dark_navy, pal.white
+                add_oval(slide, sx, cy - d / 2, d, d, fill=fill)
+            else:
+                txt = pal.grid_gray
+                add_oval(slide, sx, cy - d / 2, d, d, fill=None,
+                         line=pal.grid_gray, line_width=1.0)
+            tb = add_textbox(slide, sx, cy - d / 2, d, d,
+                             anchor=MSO_ANCHOR.MIDDLE)
+            write_paragraph(tb.text_frame, str(s_i), size=typo.small_size,
+                            bold=True, color=txt, family=typo.family,
+                            align=PP_ALIGN.CENTER, first=True)
+        if i < len(rows) - 1:
+            add_line(slide, ml, y + row_h + 0.04, right, y + row_h + 0.04,
+                     color=pal.grid_gray, width_pt=0.75)
+        y += row_h + 0.08
+    # quiet tailored-session offer
+    if offer:
+        oy = y + 0.08
+        add_rect(slide, ml, oy, right - ml, 0.48, fill=None,
+                 line=pal.bright_blue, line_width=1.0)
+        icon = f"{ASSETS}/gen/icons/people.png"
+        tx = ml + 0.25
+        if os.path.exists(icon):
+            slide_icon(slide, icon, ml + 0.18, oy + 0.09, 0.34)
+            tx = ml + 0.65
+        tb = add_textbox(slide, tx, oy, right - tx - 0.2, 0.48,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, offer, size=typo.body_size,
+                        color=pal.dark_navy, family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
+    return slide
+
+
 # ---------- 20 · Green 5 chevron signal bar ----------
 
 def add_chevron_flags(prs, *,
@@ -1731,6 +1832,7 @@ def add_method_grid(prs, *,
 
 _REGISTRY.update({
     "art_divider": add_art_divider,
+    "audience_map": add_audience_map,
     "route_map": add_route_map,
     "speaker_panels": add_speaker_panels,
     "hbar_ranked": add_hbar_ranked,
