@@ -18,6 +18,7 @@ from typing import Optional, Sequence
 
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.dml import MSO_LINE_DASH_STYLE
+from pptx.enum.shapes import MSO_SHAPE
 from pptx.util import Inches, Pt
 
 from mckinsey_pptx.base import (
@@ -46,12 +47,18 @@ def placeholder_box(slide, left_in, top_in, width_in, height_in, label,
     box.line.dash_style = MSO_LINE_DASH_STYLE.DASH
     tb = add_textbox(slide, left_in + 0.15, top_in, width_in - 0.3,
                      height_in, anchor=MSO_ANCHOR.MIDDLE)
-    write_paragraph(tb.text_frame, "PLACEHOLDER", size=typo.small_size,
-                    bold=True, color=rgb(PH_BORDER), family=typo.family,
-                    align=PP_ALIGN.CENTER, first=True)
+    first_line = True
+    if width_in >= 1.6:
+        # the header word only fits comfortably in wider boxes; narrow ones
+        # rely on the amber dashed border to signal "placeholder"
+        write_paragraph(tb.text_frame, "PLACEHOLDER", size=typo.small_size,
+                        bold=True, color=rgb(PH_BORDER), family=typo.family,
+                        align=PP_ALIGN.CENTER, first=True)
+        first_line = False
     write_paragraph(tb.text_frame, label, size=typo.body_size, bold=True,
                     color=rgb(PH_TEXT), family=typo.family,
-                    align=PP_ALIGN.CENTER, space_before=2)
+                    align=PP_ALIGN.CENTER, first=first_line,
+                    space_before=None if first_line else 2)
     if sublabel:
         write_paragraph(tb.text_frame, sublabel, size=typo.small_size,
                         color=rgb(PH_TEXT), family=typo.family,
@@ -103,6 +110,10 @@ def add_max_cover(prs, *,
     left = layout.margin_left_in + 0.15
     text_w = layout.slide_width_in - panel_w - left - 0.5
 
+    # Cyan seam where the white field meets the hero panel
+    add_rect(slide, layout.slide_width_in - panel_w - 0.055, 0, 0.055,
+             layout.slide_height_in, fill=pal.bright_blue)
+
     if event_line:
         tb = add_textbox(slide, left, 2.05, text_w, 0.35)
         write_paragraph(tb.text_frame, event_line.upper(),
@@ -120,11 +131,10 @@ def add_max_cover(prs, *,
         write_paragraph(tb.text_frame, subtitle, size=typo.body_size + 4,
                         color=pal.footer_gray, family=typo.family, first=True)
 
-    add_line(slide, left, layout.slide_height_in - 1.15,
-             left + 5.8, layout.slide_height_in - 1.15,
+    add_line(slide, left, 5.45, left + 5.8, 5.45,
              color=pal.bright_blue, width_pt=2.0)
     if date:
-        tb = add_textbox(slide, left, layout.slide_height_in - 1.0, 7.0, 0.35)
+        tb = add_textbox(slide, left, 5.60, 7.0, 0.35)
         write_paragraph(tb.text_frame, date, size=typo.body_size + 1,
                         bold=True, color=pal.text_dark, family=typo.family,
                         first=True)
@@ -192,55 +202,63 @@ def add_poll_slide(prs, *,
                    page_number=None, section_marker=None,
                    source=None, footnote=None,
                    theme: Theme = MAX_THEME):
+    """Dark interrupt family: full-bleed navy, cyan LIVE POLL chip, 2x2 answer
+    tiles, cyan bottom strip. Visually signals a mode change in the webinar."""
     slide = blank_slide(prs)
-    add_chrome(slide, title=title, theme=theme, page_number=page_number,
-               section_marker=section_marker, source=source, footnote=footnote)
     pal, typo, layout = theme.palette, theme.typography, theme.layout
+    add_rect(slide, 0, 0, layout.slide_width_in, layout.slide_height_in,
+             fill=rgb("022859"))
 
-    # LIVE POLL badge
-    badge_w = 1.55
-    add_rect(slide, layout.margin_left_in, 1.55, badge_w, 0.38,
+    chip_w = 1.55
+    add_rect(slide, layout.margin_left_in, 0.55, chip_w, 0.40,
              fill=pal.bright_blue)
-    tb = add_textbox(slide, layout.margin_left_in, 1.55, badge_w, 0.38,
+    tb = add_textbox(slide, layout.margin_left_in, 0.55, chip_w, 0.40,
                      anchor=MSO_ANCHOR.MIDDLE)
     write_paragraph(tb.text_frame, "LIVE POLL", size=typo.body_size, bold=True,
                     color=pal.white, family=typo.family,
                     align=PP_ALIGN.CENTER, first=True)
 
-    tb = add_textbox(slide, layout.margin_left_in, 2.15,
+    tb = add_textbox(slide, layout.margin_left_in, 1.25,
                      layout.slide_width_in - layout.margin_left_in
-                     - layout.margin_right_in, 0.9)
-    write_paragraph(tb.text_frame, question, size=typo.title_size + 2,
-                    bold=True, color=pal.dark_navy, family=typo.family,
-                    first=True)
+                     - layout.margin_right_in, 1.0)
+    write_paragraph(tb.text_frame, question, size=32, bold=True,
+                    color=pal.white, family=typo.family, first=True)
     enable_text_shrink(tb.text_frame)
 
-    top = 3.25
-    row_h = 0.62
-    letters = "ABCDEFG"
-    for i, opt in enumerate(options):
-        y = top + i * (row_h + 0.16)
-        add_oval(slide, layout.margin_left_in + 0.15, y + 0.06, 0.5, 0.5,
-                 fill=pal.dark_navy)
-        tb = add_textbox(slide, layout.margin_left_in + 0.15, y + 0.06,
-                         0.5, 0.5, anchor=MSO_ANCHOR.MIDDLE)
-        write_paragraph(tb.text_frame, letters[i], size=typo.body_size + 2,
+    # 2x2 answer tiles
+    letters = "ABCD"
+    tile_w = 5.9
+    tile_h = 1.35
+    gx, gy = layout.margin_left_in, 2.65
+    gapx, gapy = 0.55, 0.45
+    for i, opt in enumerate(options[:4]):
+        col_i, row_i = i % 2, i // 2
+        x = gx + col_i * (tile_w + gapx)
+        y = gy + row_i * (tile_h + gapy)
+        add_rect(slide, x, y, tile_w, tile_h, fill=rgb("0A3A73"))
+        d = 0.62
+        add_oval(slide, x + 0.28, y + (tile_h - d) / 2, d, d,
+                 fill=pal.bright_blue)
+        tb = add_textbox(slide, x + 0.28, y + (tile_h - d) / 2, d, d,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, letters[i], size=typo.body_size + 4,
                         bold=True, color=pal.white, family=typo.family,
                         align=PP_ALIGN.CENTER, first=True)
-        add_rect(slide, layout.margin_left_in + 0.85, y, 8.6, row_h,
-                 fill=pal.soft_gray)
-        tb = add_textbox(slide, layout.margin_left_in + 1.1, y, 8.2, row_h,
-                         anchor=MSO_ANCHOR.MIDDLE)
-        write_paragraph(tb.text_frame, opt, size=typo.body_size + 2,
-                        color=pal.text_dark, family=typo.family, first=True)
+        tb = add_textbox(slide, x + 1.15, y + 0.15, tile_w - 1.4,
+                         tile_h - 0.3, anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, opt, size=typo.body_size + 3,
+                        color=pal.white, family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
 
-    # Instruction ribbon, right side
-    rib_left = layout.slide_width_in - layout.margin_right_in - 2.7
-    add_rect(slide, rib_left, 3.25, 2.7, 1.15, fill=pal.deep_navy)
-    tb = add_textbox(slide, rib_left + 0.2, 3.25, 2.3, 1.15,
+    # Bottom cyan strip
+    strip_h = 0.62
+    add_rect(slide, 0, layout.slide_height_in - 0.17 - strip_h,
+             layout.slide_width_in, strip_h, fill=pal.bright_blue)
+    tb = add_textbox(slide, 0, layout.slide_height_in - 0.17 - strip_h,
+                     layout.slide_width_in, strip_h,
                      anchor=MSO_ANCHOR.MIDDLE)
-    write_paragraph(tb.text_frame, instruction, size=typo.body_size,
-                    bold=True, color=pal.white, family=typo.family,
+    write_paragraph(tb.text_frame, instruction, size=typo.body_size + 3,
+                    bold=True, color=rgb("022859"), family=typo.family,
                     align=PP_ALIGN.CENTER, first=True)
     return slide
 
@@ -253,73 +271,163 @@ def add_screenshot_slide(prs, *,
                          placeholder_note: Optional[str] = None,
                          image_path: Optional[str] = None,
                          image_caption: Optional[str] = None,
+                         kicker: Optional[str] = None,
+                         claim: Optional[str] = None,
                          bullets: Sequence[str] = (),
                          stats: Sequence[dict] = (),
+                         layout_mode: str = "right",
+                         overlap_stat: Optional[dict] = None,
                          page_number=None, section_marker=None,
                          source=None, footnote=None,
                          theme: Theme = MAX_THEME):
-    """Left: talking points + optional stat tiles. Right: large highlighted
-    screenshot placeholder."""
+    """Product-shot slide with a browser frame. layout_mode: 'right' (text
+    left, shot right), 'left' (mirrored), 'hero' (centered shot, stats
+    overlapping its bottom edge)."""
+    from editorial_slides import browser_frame
+
     slide = blank_slide(prs)
     add_chrome(slide, title=title, theme=theme, page_number=page_number,
                section_marker=section_marker, source=source, footnote=footnote)
     pal, typo, layout = theme.palette, theme.typography, theme.layout
+    top = 1.70
 
-    left_w = 4.3
-    top = 1.7
-    tb = add_textbox(slide, layout.margin_left_in, top, left_w, 3.0)
-    for j, b in enumerate(bullets):
-        write_paragraph(tb.text_frame, b, size=typo.body_size + 1,
-                        color=pal.text_dark, family=typo.family, bullet=True,
-                        first=(j == 0), space_after=8)
-    enable_text_shrink(tb.text_frame)
+    def draw_shot(sx, sy, sw, sh):
+        inner = browser_frame(slide, sx, sy, sw, sh, theme=theme)
+        il, it, iw, ih = inner
+        if image_path:
+            from PIL import Image as _Image
+            pw, ph = _Image.open(image_path).size
+            scale = min((iw - 0.06) / pw, (ih - 0.06) / ph)
+            w, h = pw * scale, ph * scale
+            px = il + (iw - w) / 2
+            py = it + (ih - h) / 2
+            slide.shapes.add_picture(image_path, Inches(px), Inches(py),
+                                     width=Inches(w))
+            if image_caption and not (layout_mode == "hero" and stats):
+                # keep the caption clear of the overlap chip, which hangs
+                # below the shot on one side; in hero mode the stat chips
+                # straddle the shot's bottom edge and would cover it
+                cap_x, cap_w = sx, sw
+                if overlap_stat and layout_mode == "right":
+                    cap_x, cap_w = sx + 1.75, sw - 1.75
+                elif overlap_stat and layout_mode == "left":
+                    cap_w = sw - 1.75
+                tb = add_textbox(slide, cap_x, sy + sh + 0.06, cap_w, 0.22)
+                write_paragraph(tb.text_frame, image_caption,
+                                size=typo.footer_size, italic=True,
+                                color=pal.footer_gray, family=typo.family,
+                                align=PP_ALIGN.CENTER, first=True)
+        else:
+            placeholder_box(slide, il + 0.04, it + 0.04, iw - 0.08,
+                            ih - 0.08, placeholder_label, placeholder_note,
+                            theme=theme)
 
-    # Stat tiles under the bullets
-    if stats:
-        tile_top = 4.55
-        tile_w = (left_w - 0.2 * (len(stats) - 1)) / len(stats)
-        for i, st in enumerate(stats):
-            tl = layout.margin_left_in + i * (tile_w + 0.2)
-            add_rect(slide, tl, tile_top, tile_w, 1.5, fill=pal.dark_navy)
-            tb = add_textbox(slide, tl + 0.1, tile_top + 0.18, tile_w - 0.2,
-                             0.55)
-            write_paragraph(tb.text_frame, st["value"],
-                            size=typo.title_size - 2, bold=True,
+    def draw_text_col(tx, tw):
+        ty = top + 0.15
+        if kicker:
+            tb = add_textbox(slide, tx, ty, tw, 0.28)
+            write_paragraph(tb.text_frame, kicker.upper(),
+                            size=typo.small_size, bold=True,
                             color=pal.bright_blue, family=typo.family,
-                            align=PP_ALIGN.CENTER, first=True)
+                            first=True)
+            ty += 0.42
+        if claim:
+            tb = add_textbox(slide, tx, ty, tw, 0.85)
+            write_paragraph(tb.text_frame, claim, size=typo.body_size + 4,
+                            bold=True, color=pal.dark_navy,
+                            family=typo.family, first=True)
             enable_text_shrink(tb.text_frame)
-            tb = add_textbox(slide, tl + 0.1, tile_top + 0.78, tile_w - 0.2,
-                             0.62)
-            write_paragraph(tb.text_frame, st["label"], size=typo.small_size,
-                            color=pal.white, family=typo.family,
-                            align=PP_ALIGN.CENTER, first=True)
-            enable_text_shrink(tb.text_frame)
+            ty += 1.0
+        tb = add_textbox(slide, tx, ty, tw, 2.1)
+        for j, bl in enumerate(bullets):
+            write_paragraph(tb.text_frame, bl, size=typo.body_size + 1,
+                            color=pal.text_dark, family=typo.family,
+                            bullet=True, first=(j == 0), space_after=8)
+        enable_text_shrink(tb.text_frame)
+        # open stat strip, hairline separated
+        if stats:
+            sy = 5.15
+            seg_w = tw / len(stats)
+            for i, st in enumerate(stats):
+                sx2 = tx + i * seg_w
+                tb = add_textbox(slide, sx2, sy, seg_w - 0.1, 0.5)
+                write_paragraph(tb.text_frame, st["value"], size=26,
+                                bold=True, color=pal.dark_navy,
+                                family=typo.family, first=True)
+                tb = add_textbox(slide, sx2, sy + 0.52, seg_w - 0.1, 0.55)
+                write_paragraph(tb.text_frame, st["label"].upper(),
+                                size=8.5, color=pal.footer_gray,
+                                family=typo.family, first=True)
+                enable_text_shrink(tb.text_frame)
+                if i < len(stats) - 1:
+                    add_line(slide, sx2 + seg_w - 0.18, sy + 0.05,
+                             sx2 + seg_w - 0.18, sy + 0.95,
+                             color=pal.grid_gray, width_pt=0.75)
 
-    # Right: real screenshot if available, else the loud placeholder
-    shot_left = layout.margin_left_in + left_w + 0.4
-    shot_w = layout.slide_width_in - layout.margin_right_in - shot_left
-    shot_h = 5.0
-    if image_path:
-        from PIL import Image as _Image
-        iw, ih = _Image.open(image_path).size
-        scale = min(shot_w / iw, shot_h / ih)
-        w, h = iw * scale, ih * scale
-        px = shot_left + (shot_w - w) / 2
-        py = top + (shot_h - h) / 2
-        add_rect(slide, px - 0.03, py - 0.03, w + 0.06, h + 0.06,
-                 fill=pal.dark_navy)
-        slide.shapes.add_picture(image_path, Inches(px), Inches(py),
-                                 width=Inches(w))
-        if image_caption:
-            tb = add_textbox(slide, px, py + h + 0.05, w, 0.22)
-            write_paragraph(tb.text_frame, image_caption,
-                            size=typo.footer_size, italic=True,
-                            color=pal.footer_gray, family=typo.family,
+    if layout_mode == "hero":
+        sw, sh = 8.8, 4.35
+        sx = (layout.slide_width_in - sw) / 2
+        if claim:
+            tb = add_textbox(slide, layout.margin_left_in, 1.42,
+                             layout.slide_width_in - 2 * layout.margin_left_in,
+                             0.42)
+            write_paragraph(tb.text_frame, claim, size=18, bold=True,
+                            color=pal.dark_navy, family=typo.family,
                             align=PP_ALIGN.CENTER, first=True)
+        draw_shot(sx, 1.95, sw, sh)
+        if stats:
+            chip_w, chip_h = 1.9, 0.95
+            total = chip_w * len(stats) + 0.35 * (len(stats) - 1)
+            cx0 = (layout.slide_width_in - total) / 2
+            cy0 = 1.95 + sh - chip_h / 2
+            for i, st in enumerate(stats):
+                cx = cx0 + i * (chip_w + 0.35)
+                add_rect(slide, cx, cy0, chip_w, chip_h, fill=pal.deep_navy)
+                tb = add_textbox(slide, cx, cy0 + 0.08, chip_w, 0.45)
+                write_paragraph(tb.text_frame, st["value"], size=22,
+                                bold=True, color=pal.bright_blue,
+                                family=typo.family, align=PP_ALIGN.CENTER,
+                                first=True)
+                tb = add_textbox(slide, cx, cy0 + 0.55, chip_w, 0.34)
+                write_paragraph(tb.text_frame, st["label"].upper(), size=8,
+                                color=pal.white, family=typo.family,
+                                align=PP_ALIGN.CENTER, first=True)
+                enable_text_shrink(tb.text_frame)
+    elif layout_mode == "left":
+        sw = 7.0
+        sh = 4.7
+        draw_shot(layout.margin_left_in, top, sw, sh)
+        tx = layout.margin_left_in + sw + 0.5
+        draw_text_col(tx, layout.slide_width_in - layout.margin_right_in - tx)
+        if overlap_stat:
+            _overlap_chip(slide, layout.margin_left_in + sw - 1.6,
+                          top + sh - 0.55, overlap_stat, theme)
     else:
-        placeholder_box(slide, shot_left, top, shot_w, shot_h,
-                        placeholder_label, placeholder_note, theme=theme)
+        text_w = 4.5
+        sx = layout.margin_left_in + text_w + 0.5
+        sw = layout.slide_width_in - layout.margin_right_in - sx
+        draw_shot(sx, top, sw, 4.7)
+        draw_text_col(layout.margin_left_in, text_w)
+        if overlap_stat:
+            _overlap_chip(slide, sx - 0.5, top + 4.7 - 0.55, overlap_stat,
+                          theme)
     return slide
+
+
+def _overlap_chip(slide, x, y, stat, theme):
+    """White chip with cyan outline overlapping a screenshot corner."""
+    pal, typo = theme.palette, theme.typography
+    w, h = 2.0, 1.1
+    add_rect(slide, x, y, w, h, fill=pal.white, line=pal.bright_blue,
+             line_width=1.5)
+    tb = add_textbox(slide, x + 0.12, y + 0.10, w - 0.24, 0.55)
+    write_paragraph(tb.text_frame, stat["value"], size=30, bold=True,
+                    color=theme.palette.dark_navy, family=typo.family,
+                    first=True)
+    tb = add_textbox(slide, x + 0.12, y + 0.66, w - 0.24, 0.36)
+    write_paragraph(tb.text_frame, stat["label"], size=typo.small_size,
+                    color=theme.palette.footer_gray, family=typo.family,
+                    first=True)
 
 
 # ---------- case study ----------
@@ -331,6 +439,7 @@ def add_case_slide(prs, *,
                    situation: Sequence[str],
                    outcome: Sequence[str],
                    kpis: Sequence[dict],
+                   bridge_stat: Optional[str] = None,
                    photo_label: Optional[str] = None,
                    page_number=None, section_marker=None,
                    source=None, footnote=None,
@@ -360,59 +469,71 @@ def add_case_slide(prs, *,
                     bold=True, color=pal.white, family=typo.family,
                     align=PP_ALIGN.CENTER, first=True)
 
-    # Two columns: situation -> outcome
-    col_top = top + band_h + 0.25
-    col_h = 2.95
-    col_w = 5.35
+    # Two open columns with left rules, bridged by a cyan chevron carrying
+    # the transformation stat.
+    col_top = top + band_h + 0.35
+    col_h = 2.75
+    col_w = 5.0
     right_left = layout.slide_width_in - layout.margin_right_in - col_w
 
-    for col_left, head, items, head_fill in (
+    for col_left, head, items, accent in (
         (layout.margin_left_in, "THE SITUATION", situation, pal.mid_blue),
         (right_left, "AFTER THE DEAL", outcome, pal.bright_blue),
     ):
-        add_rect(slide, col_left, col_top, col_w, 0.38, fill=head_fill)
-        tb = add_textbox(slide, col_left + 0.2, col_top, col_w - 0.4, 0.38,
-                         anchor=MSO_ANCHOR.MIDDLE)
-        write_paragraph(tb.text_frame, head, size=typo.body_size, bold=True,
-                        color=pal.white, family=typo.family, first=True)
-        add_rect(slide, col_left, col_top + 0.38, col_w, col_h - 0.38,
-                 fill=pal.soft_gray)
-        tb = add_textbox(slide, col_left + 0.25, col_top + 0.55,
-                         col_w - 0.5, col_h - 0.65)
-        for j, b in enumerate(items):
-            write_paragraph(tb.text_frame, b, size=typo.body_size,
+        add_rect(slide, col_left, col_top, 0.03, col_h, fill=accent)
+        tb = add_textbox(slide, col_left + 0.25, col_top, col_w - 0.4, 0.30)
+        write_paragraph(tb.text_frame, head, size=typo.small_size + 1,
+                        bold=True, color=accent, family=typo.family,
+                        first=True)
+        tb = add_textbox(slide, col_left + 0.25, col_top + 0.45,
+                         col_w - 0.5, col_h - 0.5)
+        for j, b in enumerate(items[:3]):
+            write_paragraph(tb.text_frame, b, size=typo.body_size + 1,
                             color=pal.text_dark, family=typo.family,
-                            bullet=True, first=(j == 0), space_after=6)
+                            bullet=True, first=(j == 0), space_after=8)
         enable_text_shrink(tb.text_frame)
 
-    # Connecting arrow between the columns
-    mid_y = col_top + col_h / 2
-    ar_left = layout.margin_left_in + col_w + 0.12
-    ar_w = right_left - ar_left - 0.12
-    tb = add_textbox(slide, ar_left, mid_y - 0.4, ar_w, 0.8,
-                     anchor=MSO_ANCHOR.MIDDLE)
-    write_paragraph(tb.text_frame, "→", size=typo.title_size + 14, bold=True,
-                    color=pal.bright_blue, family=typo.family,
-                    align=PP_ALIGN.CENTER, first=True)
+    # Chevron bridge with the transformation stat
+    if bridge_stat:
+        mid_y = col_top + col_h / 2
+        ch_w = right_left - (layout.margin_left_in + col_w) + 0.5
+        ch_x = layout.margin_left_in + col_w - 0.25
+        ch = slide.shapes.add_shape(
+            MSO_SHAPE.CHEVRON, Inches(ch_x), Inches(mid_y - 0.34),
+            Inches(ch_w), Inches(0.68))
+        ch.shadow.inherit = False
+        ch.fill.solid(); ch.fill.fore_color.rgb = pal.bright_blue
+        ch.line.fill.background()
+        tb = add_textbox(slide, ch_x + 0.15, mid_y - 0.34, ch_w - 0.45,
+                         0.68, anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, bridge_stat, size=typo.body_size,
+                        bold=True, color=rgb("022859"), family=typo.family,
+                        align=PP_ALIGN.CENTER, first=True)
+        enable_text_shrink(tb.text_frame)
 
-    # KPI band at the bottom
-    kpi_top = col_top + col_h + 0.22
+    # Open stat band at the bottom, hairline separated
+    kpi_top = col_top + col_h + 0.30
     n = max(len(kpis), 1)
-    kpi_w = (layout.slide_width_in - layout.margin_left_in
-             - layout.margin_right_in - 0.2 * (n - 1)) / n
+    seg_w = (layout.slide_width_in - layout.margin_left_in
+             - layout.margin_right_in) / n
+    add_line(slide, layout.margin_left_in, kpi_top,
+             layout.slide_width_in - layout.margin_right_in, kpi_top,
+             color=pal.grid_gray, width_pt=0.75)
     for i, k in enumerate(kpis):
-        kl = layout.margin_left_in + i * (kpi_w + 0.2)
-        add_rect(slide, kl, kpi_top, kpi_w, 1.05, fill=pal.deep_navy)
-        tb = add_textbox(slide, kl + 0.1, kpi_top + 0.12, kpi_w - 0.2, 0.45)
-        write_paragraph(tb.text_frame, k["value"], size=typo.title_size - 4,
-                        bold=True, color=pal.bright_blue, family=typo.family,
-                        align=PP_ALIGN.CENTER, first=True)
+        kl = layout.margin_left_in + i * seg_w
+        tb = add_textbox(slide, kl + 0.1, kpi_top + 0.12, seg_w - 0.3, 0.5)
+        write_paragraph(tb.text_frame, k["value"], size=26, bold=True,
+                        color=pal.dark_navy, family=typo.family, first=True)
         enable_text_shrink(tb.text_frame)
-        tb = add_textbox(slide, kl + 0.1, kpi_top + 0.58, kpi_w - 0.2, 0.42)
-        write_paragraph(tb.text_frame, k["label"], size=typo.small_size,
-                        color=pal.white, family=typo.family,
-                        align=PP_ALIGN.CENTER, first=True)
+        tb = add_textbox(slide, kl + 0.1, kpi_top + 0.64, seg_w - 0.3, 0.34)
+        write_paragraph(tb.text_frame, k["label"].upper(), size=8.5,
+                        color=pal.footer_gray, family=typo.family,
+                        first=True)
         enable_text_shrink(tb.text_frame)
+        if i < n - 1:
+            add_line(slide, kl + seg_w - 0.15, kpi_top + 0.15,
+                     kl + seg_w - 0.15, kpi_top + 0.9,
+                     color=pal.grid_gray, width_pt=0.75)
     return slide
 
 
@@ -424,8 +545,8 @@ def add_access_ladder(prs, *,
                       page_number=None, section_marker=None,
                       source=None, footnote=None,
                       theme: Theme = MAX_THEME):
-    """3 ascending blocks left->right (community -> marketplace -> advisory).
-    Each step: name, stat, description bullets."""
+    """Ascending steps: wide-and-shallow to narrow-and-deep (the geometry IS
+    the tradeoff). steps: [{kicker, name, stat, bullets(max 2)}]"""
     slide = blank_slide(prs)
     add_chrome(slide, title=title, theme=theme, page_number=page_number,
                section_marker=section_marker, source=source, footnote=footnote)
@@ -433,51 +554,49 @@ def add_access_ladder(prs, *,
 
     n = len(steps)
     gap = 0.45
-    total_w = layout.slide_width_in - layout.margin_left_in - layout.margin_right_in
-    col_w = (total_w - gap * (n - 1)) / n
     base_y = 6.55
+    widths = [4.6, 3.9, 3.2][:n]
     heights = [2.6, 3.4, 4.2][:n]
     fills = [pal.mid_blue, pal.dark_navy, pal.deep_navy][:n]
+    left = layout.margin_left_in
 
+    corners = []
     for i, st in enumerate(steps):
-        left = layout.margin_left_in + i * (col_w + gap)
+        col_w = widths[i]
         h = heights[i]
         top = base_y - h
         add_rect(slide, left, top, col_w, h, fill=fills[i])
-        # Step number pill
-        add_oval(slide, left + 0.25, top + 0.22, 0.46, 0.46,
-                 fill=pal.bright_blue)
-        tb = add_textbox(slide, left + 0.25, top + 0.22, 0.46, 0.46,
-                         anchor=MSO_ANCHOR.MIDDLE)
-        write_paragraph(tb.text_frame, str(i + 1), size=typo.body_size + 2,
-                        bold=True, color=pal.white, family=typo.family,
-                        align=PP_ALIGN.CENTER, first=True)
-        tb = add_textbox(slide, left + 0.85, top + 0.22, col_w - 1.0, 0.5,
-                         anchor=MSO_ANCHOR.MIDDLE)
-        write_paragraph(tb.text_frame, st["name"], size=typo.body_size + 2,
-                        bold=True, color=pal.white, family=typo.family,
-                        first=True)
-        enable_text_shrink(tb.text_frame)
-        tb = add_textbox(slide, left + 0.3, top + 0.85, col_w - 0.6, 0.55)
+        corners.append((left, top))
+        tb = add_textbox(slide, left + 0.28, top + 0.20, col_w - 0.56, 0.28)
+        write_paragraph(tb.text_frame, st["kicker"].upper(),
+                        size=typo.small_size, bold=True,
+                        color=pal.light_blue, family=typo.family, first=True)
+        tb = add_textbox(slide, left + 0.28, top + 0.52, col_w - 0.56, 0.55)
         write_paragraph(tb.text_frame, st["stat"], size=typo.title_size - 2,
                         bold=True, color=pal.bright_blue, family=typo.family,
                         first=True)
         enable_text_shrink(tb.text_frame)
-        tb = add_textbox(slide, left + 0.3, top + 1.45, col_w - 0.6,
-                         h - 1.6)
-        for j, b in enumerate(st.get("bullets", [])):
-            write_paragraph(tb.text_frame, b, size=typo.body_size - 1,
+        tb = add_textbox(slide, left + 0.28, top + 1.15, col_w - 0.56,
+                         h - 1.35)
+        for j, bl in enumerate(st.get("bullets", [])[:2]):
+            write_paragraph(tb.text_frame, bl, size=typo.body_size - 1,
                             color=pal.white, family=typo.family, bullet=True,
                             first=(j == 0), space_after=5)
         enable_text_shrink(tb.text_frame)
+        left += col_w + gap
 
-    # Ascending arrow above the steps
-    tb = add_textbox(slide, layout.margin_left_in, 1.62, total_w, 0.4)
-    write_paragraph(tb.text_frame,
-                    "Wider access, deeper support →",
-                    size=typo.body_size + 1, bold=True, italic=False,
-                    color=pal.footer_gray, family=typo.family,
-                    align=PP_ALIGN.RIGHT, first=True)
+    # Cyan ascent line across the step corners
+    for i in range(len(corners) - 1):
+        x1, y1 = corners[i][0] + widths[i], corners[i][1]
+        x2, y2 = corners[i + 1]
+        add_line(slide, x1 - 0.1, y1 - 0.15, x2 + 0.1, y2 - 0.15,
+                 color=pal.bright_blue, width_pt=2.5)
+    tip_x, tip_y = corners[-1][0] + widths[-1] * 0.55, corners[-1][1] - 0.15
+    tb = add_textbox(slide, corners[0][0] + 0.2, corners[-1][1] - 0.75,
+                     9.5, 0.32)
+    write_paragraph(tb.text_frame, "WIDER ACCESS  →  DEEPER SUPPORT",
+                    size=typo.small_size + 1, bold=True,
+                    color=pal.footer_gray, family=typo.family, first=True)
     return slide
 
 
@@ -491,52 +610,62 @@ def add_cta_slide(prs, *,
                   page_number=None, section_marker=None,
                   source=None, footnote=None,
                   theme: Theme = MAX_THEME):
+    """Conversion hero: three scannable audience rows + QR right + navy
+    action ribbon. paths: [{num, who, action, detail}]"""
     slide = blank_slide(prs)
     add_chrome(slide, title=title, theme=theme, page_number=page_number,
                section_marker=section_marker, source=source, footnote=footnote)
     pal, typo, layout = theme.palette, theme.typography, theme.layout
 
-    n = len(paths)
-    gap = 0.4
-    cards_w = 9.0
-    card_w = (cards_w - gap * (n - 1)) / n
-    top = 1.75
-    card_h = 3.15
-
+    rows_w = 8.6
+    top = 1.85
+    row_h = 1.18
     for i, p in enumerate(paths):
-        left = layout.margin_left_in + i * (card_w + gap)
-        add_rect(slide, left, top, card_w, card_h, fill=pal.soft_gray)
-        add_rect(slide, left, top, card_w, 0.5, fill=pal.dark_navy)
-        tb = add_textbox(slide, left + 0.15, top, card_w - 0.3, 0.5,
+        y = top + i * (row_h + 0.14)
+        d = 0.5
+        add_oval(slide, layout.margin_left_in, y + (row_h - d) / 2, d, d,
+                 fill=pal.bright_blue)
+        tb = add_textbox(slide, layout.margin_left_in,
+                         y + (row_h - d) / 2, d, d,
                          anchor=MSO_ANCHOR.MIDDLE)
-        write_paragraph(tb.text_frame, p["who"], size=typo.body_size + 1,
+        write_paragraph(tb.text_frame, str(p["num"]), size=typo.body_size + 4,
                         bold=True, color=pal.white, family=typo.family,
                         align=PP_ALIGN.CENTER, first=True)
+        tx = layout.margin_left_in + 0.75
+        tb = add_textbox(slide, tx, y + 0.02, rows_w - 0.75, 0.26)
+        write_paragraph(tb.text_frame, p["who"].upper(),
+                        size=typo.small_size, bold=True,
+                        color=pal.footer_gray, family=typo.family, first=True)
+        tb = add_textbox(slide, tx, y + 0.28, rows_w - 0.75, 0.42)
+        write_paragraph(tb.text_frame, p["action"], size=16, bold=True,
+                        color=pal.dark_navy, family=typo.family, first=True)
         enable_text_shrink(tb.text_frame)
-        tb = add_textbox(slide, left + 0.25, top + 0.7, card_w - 0.5, 1.1)
-        write_paragraph(tb.text_frame, p["action"], size=typo.body_size + 1,
-                        bold=True, color=pal.dark_navy, family=typo.family,
-                        first=True)
-        enable_text_shrink(tb.text_frame)
-        tb = add_textbox(slide, left + 0.25, top + 1.8, card_w - 0.5,
-                         card_h - 1.95)
+        tb = add_textbox(slide, tx, y + 0.72, rows_w - 0.75, 0.40)
         write_paragraph(tb.text_frame, p["detail"], size=typo.body_size - 1,
-                        color=pal.text_dark, family=typo.family, first=True)
+                        color=pal.footer_gray, family=typo.family, first=True)
         enable_text_shrink(tb.text_frame)
+        if i < len(paths) - 1:
+            add_line(slide, layout.margin_left_in, y + row_h + 0.07,
+                     layout.margin_left_in + rows_w, y + row_h + 0.07,
+                     color=pal.grid_gray, width_pt=0.75)
 
     # QR placeholder on the right
-    qr_left = layout.margin_left_in + cards_w + 0.45
+    qr_left = layout.margin_left_in + rows_w + 0.55
     qr_w = layout.slide_width_in - layout.margin_right_in - qr_left
-    placeholder_box(slide, qr_left, top, qr_w, card_h, qr_label,
+    placeholder_box(slide, qr_left, top + 0.1, qr_w, qr_w, qr_label,
                     "Scan to book", theme=theme)
+    tb = add_textbox(slide, qr_left, top + 0.1 + qr_w + 0.08, qr_w, 0.3)
+    write_paragraph(tb.text_frame, "One scan, one booking page",
+                    size=typo.small_size, color=pal.footer_gray,
+                    family=typo.family, align=PP_ALIGN.CENTER, first=True)
 
     # Bottom action ribbon
-    rib_top = top + card_h + 0.35
+    rib_top = top + 3 * (row_h + 0.14) + 0.25
     rib_w = layout.slide_width_in - layout.margin_left_in - layout.margin_right_in
-    add_rect(slide, layout.margin_left_in, rib_top, rib_w, 1.15,
+    add_rect(slide, layout.margin_left_in, rib_top, rib_w, 0.95,
              fill=pal.deep_navy)
-    tb = add_textbox(slide, layout.margin_left_in + 0.4, rib_top + 0.12,
-                     rib_w - 0.8, 0.95)
+    tb = add_textbox(slide, layout.margin_left_in + 0.4, rib_top + 0.08,
+                     rib_w - 0.8, 0.82)
     for j, a in enumerate(bottom_actions):
         write_paragraph(tb.text_frame, a, size=typo.body_size + 2,
                         bold=(j == 0), color=pal.white if j == 0
@@ -573,8 +702,10 @@ def add_thank_you(prs, *,
                         align=PP_ALIGN.CENTER, first=(j == 0), space_after=6)
 
     if contact_placeholder:
-        placeholder_box(slide, layout.slide_width_in / 2 - 2.4,
-                        5.65, 4.8, 1.15, contact_placeholder, theme=theme)
+        placeholder_box(slide, layout.slide_width_in / 2 - 1.1,
+                        4.85, 2.2, 1.6, contact_placeholder, theme=theme)
+    from editorial_slides import closing_strip
+    closing_strip(slide, theme, height=0.7)
     return slide
 
 
@@ -680,48 +811,48 @@ def add_recap_cards(prs, *,
                     page_number=None, section_marker=None,
                     source=None, footnote=None,
                     theme: Theme = MAX_THEME):
-    """Three navy-headed takeaway cards + full-width navy conclusion banner."""
+    """Inverted hierarchy: the conclusion IS the headline; three flat recap
+    chips sit beneath it."""
     slide = blank_slide(prs)
     add_chrome(slide, title=title, theme=theme, page_number=page_number,
                section_marker=section_marker, source=source, footnote=footnote)
     pal, typo, layout = theme.palette, theme.typography, theme.layout
-
-    top = 1.90
-    n = len(cards)
-    gap = 0.40
     total_w = (layout.slide_width_in - layout.margin_left_in
                - layout.margin_right_in)
-    card_w = (total_w - gap * (n - 1)) / n
-    card_h = 2.80
 
+    tb = add_textbox(slide, layout.margin_left_in, 2.0, total_w, 1.15)
+    write_paragraph(tb.text_frame, conclusion, size=26, bold=True,
+                    color=pal.dark_navy, family=typo.family, first=True)
+    enable_text_shrink(tb.text_frame)
+    add_line(slide, layout.margin_left_in, 3.25,
+             layout.margin_left_in + 2.5, 3.25, color=pal.bright_blue,
+             width_pt=3.0)
+
+    n = len(cards)
+    gap = 0.4
+    card_w = (total_w - gap * (n - 1)) / n
+    top = 3.75
+    card_h = 1.75
     for i, c in enumerate(cards):
         left = layout.margin_left_in + i * (card_w + gap)
-        add_rect(slide, left, top, card_w, 0.55, fill=pal.dark_navy)
-        tb = add_textbox(slide, left + 0.2, top, card_w - 0.4, 0.55,
-                         anchor=MSO_ANCHOR.MIDDLE)
-        write_paragraph(tb.text_frame, c["takeaway"], size=typo.body_size + 1,
-                        bold=True, color=pal.white, family=typo.family,
+        add_rect(slide, left, top, card_w, card_h, fill=None,
+                 line=pal.grid_gray, line_width=1.0)
+        tb = add_textbox(slide, left + 0.22, top + 0.15, 0.9, 0.4)
+        write_paragraph(tb.text_frame, f"0{i + 1}", size=typo.body_size + 4,
+                        bold=True, color=pal.bright_blue, family=typo.family,
+                        first=True)
+        tb = add_textbox(slide, left + 0.22, top + 0.55, card_w - 0.44,
+                         0.40)
+        write_paragraph(tb.text_frame, c["takeaway"], size=typo.body_size + 2,
+                        bold=True, color=pal.dark_navy, family=typo.family,
                         first=True)
         enable_text_shrink(tb.text_frame)
-        add_rect(slide, left, top + 0.55, card_w, card_h - 0.55,
-                 fill=pal.soft_gray)
-        tb = add_textbox(slide, left + 0.25, top + 0.75, card_w - 0.5,
-                         card_h - 0.95)
-        for j, bl in enumerate(c.get("bullets", [])):
-            write_paragraph(tb.text_frame, bl, size=typo.body_size,
-                            color=pal.text_dark, family=typo.family,
-                            bullet=True, first=(j == 0), space_after=8)
+        tb = add_textbox(slide, left + 0.22, top + 1.0, card_w - 0.44,
+                         0.65)
+        write_paragraph(tb.text_frame, c["line"], size=typo.body_size - 1,
+                        color=pal.footer_gray, family=typo.family,
+                        first=True)
         enable_text_shrink(tb.text_frame)
-
-    band_top = top + card_h + 0.35
-    add_rect(slide, layout.margin_left_in, band_top, total_w, 1.0,
-             fill=pal.deep_navy)
-    tb = add_textbox(slide, layout.margin_left_in + 0.4, band_top,
-                     total_w - 0.8, 1.0, anchor=MSO_ANCHOR.MIDDLE)
-    write_paragraph(tb.text_frame, conclusion, size=typo.body_size + 4,
-                    bold=True, color=pal.white, family=typo.family,
-                    align=PP_ALIGN.CENTER, first=True)
-    enable_text_shrink(tb.text_frame)
     return slide
 
 
@@ -755,7 +886,18 @@ def add_scorecard_slide(prs, *,
                - layout.margin_right_in)
     name_w = 3.1
     col_w = (total_w - name_w) / 2
-    group_colors = {"green": rgb("2E7D32"), "red": rgb("C62828")}
+    group_colors = {"green": rgb("1E6E42"), "red": rgb("B03A2E")}
+
+    # Screenshot-this tag, top-right
+    tag_w = 1.85
+    add_rect(slide, layout.slide_width_in - layout.margin_right_in - tag_w,
+             top - 0.40, tag_w, 0.34, fill=pal.bright_blue)
+    tb = add_textbox(slide,
+                     layout.slide_width_in - layout.margin_right_in - tag_w,
+                     top - 0.40, tag_w, 0.34, anchor=MSO_ANCHOR.MIDDLE)
+    write_paragraph(tb.text_frame, "SCREENSHOT THIS", size=typo.small_size,
+                    bold=True, color=rgb("022859"), family=typo.family,
+                    align=PP_ALIGN.CENTER, first=True)
 
     # Header row
     hdr_h = 0.34
@@ -798,12 +940,20 @@ def add_scorecard_slide(prs, *,
                             bold=True, color=pal.dark_navy,
                             family=typo.family, first=True)
             enable_text_shrink(tb.text_frame)
-            for x, key, color in (
-                (layout.margin_left_in + name_w, "weak", pal.footer_gray),
+            for x, key, color, dot in (
+                (layout.margin_left_in + name_w, "weak", pal.footer_gray,
+                 "open"),
                 (layout.margin_left_in + name_w + col_w, "strong",
-                 pal.text_dark),
+                 pal.text_dark, "filled"),
             ):
-                tb = add_textbox(slide, x + 0.15, y, col_w - 0.3, row_h,
+                dcy = y + row_h / 2 - 0.06
+                if dot == "open":
+                    add_oval(slide, x + 0.12, dcy, 0.12, 0.12, fill=None,
+                             line=pal.footer_gray, line_width=1.0)
+                else:
+                    add_oval(slide, x + 0.12, dcy, 0.12, 0.12,
+                             fill=pal.bright_blue)
+                tb = add_textbox(slide, x + 0.36, y, col_w - 0.5, row_h,
                                  anchor=MSO_ANCHOR.MIDDLE)
                 write_paragraph(tb.text_frame, row[key],
                                 size=typo.body_size - 2, color=color,

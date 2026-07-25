@@ -53,6 +53,8 @@ def _draw_takeaway(slide, theme, *, top=None, takeaways: Sequence[str],
                    header="Key takeaways/main conclusion",
                    box=DEFAULT_TAKEAWAY_BOX,
                    divider_x=TAKEAWAY_DIVIDER_X):
+    if header is None:
+        return  # rail suppressed: chart carries the story
     pal, typo = theme.palette, theme.typography
     left, ttop, w, h = box
     if top is not None:
@@ -122,7 +124,7 @@ def _draw_description_header(slide, theme, *, left, top, width, label="Descripti
 def _draw_axis_and_bars(slide, theme, *, chart_box, data_label,
                         data_unit, categories, values, focus_index=None,
                         forecast_from_index=None, legend=None,
-                        label_sign=""):
+                        label_sign="", axis=True, bar_colors=None):
     """Returns (x_for_each_bar_center, baseline_y, bar_w, top_y, max_val).
 
     Negative values not supported (templates don't show them)."""
@@ -171,29 +173,43 @@ def _draw_axis_and_bars(slide, theme, *, chart_box, data_label,
     max_val = max(values) if values else 0
     ticks, axis_top = _y_ticks(max_val)
 
-    # Y axis labels + horizontal grid
-    for tval in ticks:
-        ty = plot_bottom - (tval / axis_top) * plot_h if axis_top > 0 else plot_bottom
-        add_line(slide, plot_left, ty, plot_right, ty,
-                 color=pal.grid_gray, width_pt=0.5)
-        tb = add_textbox(slide, cleft, ty - 0.10, 0.5, 0.22,
-                         anchor=MSO_ANCHOR.MIDDLE)
-        write_paragraph(tb.text_frame, f"{int(round(tval))}",
-                        size=typo.chart_axis_size, color=pal.text_dark,
-                        family=typo.family, align=PP_ALIGN.RIGHT, first=True)
+    # Y axis labels + horizontal grid. With labeled bars the axis is triple
+    # encoding — axis=False drops ticks and gridlines entirely.
+    if axis:
+        for tval in ticks:
+            ty = plot_bottom - (tval / axis_top) * plot_h if axis_top > 0 else plot_bottom
+            add_line(slide, plot_left, ty, plot_right, ty,
+                     color=pal.grid_gray, width_pt=0.5)
+            tb = add_textbox(slide, cleft, ty - 0.10, 0.5, 0.22,
+                             anchor=MSO_ANCHOR.MIDDLE)
+            write_paragraph(tb.text_frame, f"{int(round(tval))}",
+                            size=typo.chart_axis_size, color=pal.text_dark,
+                            family=typo.family, align=PP_ALIGN.RIGHT, first=True)
+    else:
+        add_line(slide, plot_left, plot_bottom, plot_right, plot_bottom,
+                 color=pal.grid_gray, width_pt=0.75)
 
     # Bars
     n = len(values)
     slot_w = plot_w / n
     bar_w = slot_w * 0.6
     bar_centers = []
+    named_fills = None
+    if bar_colors is not None:
+        named_fills = {
+            "navy": pal.dark_navy, "cyan": pal.bright_blue,
+            "light": pal.light_blue, "steel": pal.mid_blue,
+            "pale": pal.light_gray,
+        }
     for i, (cat, val) in enumerate(zip(categories, values)):
         slot_left = plot_left + i * slot_w
         bar_left = slot_left + (slot_w - bar_w) / 2
         bar_h = (val / axis_top) * plot_h if axis_top > 0 else 0
         bar_top = plot_bottom - bar_h
         # Color
-        if forecast_from_index is not None and i >= forecast_from_index:
+        if named_fills is not None and i < len(bar_colors):
+            fill = named_fills.get(bar_colors[i], pal.dark_navy)
+        elif forecast_from_index is not None and i >= forecast_from_index:
             fill = pal.bright_blue
         elif focus_index is not None and i == focus_index:
             fill = pal.bright_blue
@@ -201,12 +217,11 @@ def _draw_axis_and_bars(slide, theme, *, chart_box, data_label,
             fill = pal.dark_navy
         add_rect(slide, bar_left, bar_top, bar_w, bar_h, fill=fill)
 
-        # Value label above the bar. Small non-integer values keep one decimal
-        # so e.g. 7.9 doesn't display as a misleading 8; if any value in the
-        # series is fractional, the whole series keeps one decimal for
-        # consistency (1.0, not 1, next to 3.4).
-        series_decimal = any(abs(v) < 10 and float(v) != int(v) for v in values)
-        if series_decimal and abs(val) < 10:
+        # Value label above the bar. Fractional series keep one decimal
+        # everywhere so adjacent labels never collapse into false duplicates
+        # (48.1 and 47.7 must not both render as "48").
+        series_decimal = any(float(v) != int(v) for v in values)
+        if series_decimal:
             val_text = f"{label_sign}{val:.1f}"
         else:
             val_text = f"{label_sign}{int(round(val))}"
@@ -286,20 +301,26 @@ def add_column_comparison(prs, *,
                           description: str = "Description",
                           takeaway_header: str = "Key takeaways/main conclusion",
                           label_sign: str = "",
+                          axis: bool = True, bar_colors=None,
+                          chart_box=None,
                           page_number=None, section_marker=None,
                           source="xx", footnote="1. xx",
                           theme: Theme = DEFAULT_THEME):
+    box = chart_box or (
+        (0.45, 1.95, 12.4, 4.85) if takeaway_header is None
+        else DEFAULT_CHART_BOX)
     slide = _common(prs, title=title, page_number=page_number,
                     section_marker=section_marker, source=source,
                     footnote=footnote, theme=theme,
-                    description_left=DEFAULT_CHART_BOX[0],
+                    description_left=box[0],
                     description_top=DEFAULT_DESCRIPTION_TOP,
-                    description_w=DEFAULT_CHART_BOX[2],
+                    description_w=box[2],
                     description=description)
-    _draw_axis_and_bars(slide, theme, chart_box=DEFAULT_CHART_BOX,
+    _draw_axis_and_bars(slide, theme, chart_box=box,
                         data_label=data_label, data_unit=data_unit,
                         categories=categories, values=values,
-                        focus_index=focus_index, label_sign=label_sign)
+                        focus_index=focus_index, label_sign=label_sign,
+                        axis=axis, bar_colors=bar_colors)
     _draw_takeaway(slide, theme, takeaways=takeaways, header=takeaway_header)
     return slide
 
@@ -349,22 +370,26 @@ def add_column_split_growth(prs, *,
                             takeaways=(),
                             description: str = "Description",
                             takeaway_header: str = "Key takeaways/main conclusion",
+                            axis: bool = True, bar_colors=None,
                             page_number=None,
                             section_marker=None, source="xx",
                             footnote="1. xx",
                             theme: Theme = DEFAULT_THEME):
+    box = ((0.45, 1.95, 12.4, 4.85) if takeaway_header is None
+           else DEFAULT_CHART_BOX)
     slide = _common(prs, title=title, page_number=page_number,
                     section_marker=section_marker, source=source,
                     footnote=footnote, theme=theme,
-                    description_left=DEFAULT_CHART_BOX[0],
+                    description_left=box[0],
                     description_top=DEFAULT_DESCRIPTION_TOP,
-                    description_w=DEFAULT_CHART_BOX[2],
+                    description_w=box[2],
                     description=description)
-    legend = [(theme.palette.dark_navy, "Actuals")]
+    legend = None if not axis else [(theme.palette.dark_navy, "Actuals")]
     centers, baseline, bw, plot_top, axis_top = _draw_axis_and_bars(
-        slide, theme, chart_box=DEFAULT_CHART_BOX,
+        slide, theme, chart_box=box,
         data_label=data_label, data_unit=data_unit,
         categories=categories, values=values, legend=legend,
+        axis=axis, bar_colors=bar_colors,
     )
     if values and split_index > 0:
         def _y(v):
