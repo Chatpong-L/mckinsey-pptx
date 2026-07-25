@@ -718,12 +718,9 @@ b.add("credits_slide",
       groups=[
           {"to": "To everyone here tonight",
            "line": "Thank you for spending your Sunday evening with us."},
-          {"to": "The moderator, events crew, and the Max Solutions team",
-           "line": "Who built and ran tonight behind the scenes."},
-          {"to": "Khun Aoy · Managing Director",
-           "line": "For the client insights that ground everything we shared."},
-          {"to": "Khun Vipin · Head of M&A",
-           "line": "For the deal instincts behind every framework tonight."},
+          {"to": "To the Max Solutions team",
+           "line": "The moderator, our events crew, Khun Aoy, and Khun Vipin, "
+                   "who built tonight behind the scenes."},
       ],
       finale="And to my partner Pim, who inspired this, helped build every "
              "part of it, and has carried me through the whole journey.",

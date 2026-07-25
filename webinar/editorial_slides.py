@@ -1469,7 +1469,11 @@ def add_credits_slide(prs, *,
              layout.slide_width_in / 2 + 0.6, 1.25,
              color=pal.bright_blue, width_pt=2.0)
 
-    y = 1.75
+    # vertically center the composition: short lists breathe instead of
+    # hugging the header
+    spacing = 1.02 if len(groups) >= 3 else 1.25
+    block_h = len(groups) * spacing + 1.95
+    y = max(1.75, 1.6 + (5.55 - block_h) / 2)
     for g in groups:
         tb = add_textbox(slide, 2.2, y, 8.93, 0.34)
         write_paragraph(tb.text_frame, g["to"].upper(),
@@ -1481,7 +1485,7 @@ def add_credits_slide(prs, *,
                         color=pal.text_dark, family=typo.family,
                         align=PP_ALIGN.CENTER, first=True)
         enable_text_shrink(tb.text_frame)
-        y += 1.02
+        y += spacing
 
     # Finale: partner moment
     add_line(slide, 4.4, y + 0.12, 8.93, y + 0.12, color=pal.grid_gray,
