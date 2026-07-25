@@ -310,7 +310,12 @@ def add_two_column_compare(prs, *,
         body_top += 0.45
 
     body_bottom = layout.footer_top_in - 0.20
-    body_h = body_bottom - body_top
+    avail_h = body_bottom - body_top
+    # Size cards to content instead of stretching to the footer: short bullet
+    # lists otherwise float in two-thirds-empty boxes.
+    n_items = max(len(left_items), len(right_items), 1)
+    body_h = min(avail_h, 0.55 + 0.45 + n_items * 0.52)
+    body_top += (avail_h - body_h) / 2
     arrow_w = 0.9 if show_arrow else 0.4
     col_w = (width - arrow_w) / 2
 
@@ -335,9 +340,9 @@ def add_two_column_compare(prs, *,
                          col_w - 0.40, card_h - 0.30)
         first = True
         for it in items:
-            write_paragraph(tb.text_frame, it, size=typo.body_size,
+            write_paragraph(tb.text_frame, it, size=typo.body_size + 1,
                             color=pal.text_dark, family=typo.family,
-                            bullet=True, space_after=4, first=first)
+                            bullet=True, space_after=8, first=first)
             first = False
 
     if show_arrow:

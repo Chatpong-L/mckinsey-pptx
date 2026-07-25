@@ -78,12 +78,24 @@ def add_max_cover(prs, *,
     slide = blank_slide(prs)
     pal, typo, layout = theme.palette, theme.typography, theme.layout
 
-    # Right navy panel with the Max Data icon watermark
+    # Right panel: generated Bangkok-skyline hero art if present, else navy
+    # with the Max Data icon watermark.
     panel_w = 4.2
+    hero = f"{ASSETS}/gen/cover-hero-crop.png"
     add_rect(slide, layout.slide_width_in - panel_w, 0, panel_w,
              layout.slide_height_in, fill=pal.deep_navy)
-    add_logo(slide, MAXDATA_ICON, layout.slide_width_in - panel_w + 1.05,
-             layout.slide_height_in / 2 - 1.05, 2.1)
+    import os as _os
+    if _os.path.exists(hero):
+        slide.shapes.add_picture(hero,
+                                 Inches(layout.slide_width_in - panel_w),
+                                 Inches(0), width=Inches(panel_w),
+                                 height=Inches(layout.slide_height_in))
+        add_logo(slide, MAXDATA_ICON,
+                 layout.slide_width_in - panel_w / 2 - 0.4,
+                 layout.slide_height_in - 1.25, 0.8)
+    else:
+        add_logo(slide, MAXDATA_ICON, layout.slide_width_in - panel_w + 1.05,
+                 layout.slide_height_in / 2 - 1.05, 2.1)
 
     # Max Solutions logo top-left
     add_logo(slide, LOGO, layout.margin_left_in + 0.15, 0.45, 1.9)
@@ -239,6 +251,8 @@ def add_screenshot_slide(prs, *,
                          title: str,
                          placeholder_label: str,
                          placeholder_note: Optional[str] = None,
+                         image_path: Optional[str] = None,
+                         image_caption: Optional[str] = None,
                          bullets: Sequence[str] = (),
                          stats: Sequence[dict] = (),
                          page_number=None, section_marker=None,
@@ -281,11 +295,30 @@ def add_screenshot_slide(prs, *,
                             align=PP_ALIGN.CENTER, first=True)
             enable_text_shrink(tb.text_frame)
 
-    # Right: screenshot placeholder
+    # Right: real screenshot if available, else the loud placeholder
     shot_left = layout.margin_left_in + left_w + 0.4
     shot_w = layout.slide_width_in - layout.margin_right_in - shot_left
-    placeholder_box(slide, shot_left, top, shot_w, 5.05, placeholder_label,
-                    placeholder_note, theme=theme)
+    shot_h = 5.0
+    if image_path:
+        from PIL import Image as _Image
+        iw, ih = _Image.open(image_path).size
+        scale = min(shot_w / iw, shot_h / ih)
+        w, h = iw * scale, ih * scale
+        px = shot_left + (shot_w - w) / 2
+        py = top + (shot_h - h) / 2
+        add_rect(slide, px - 0.03, py - 0.03, w + 0.06, h + 0.06,
+                 fill=pal.dark_navy)
+        slide.shapes.add_picture(image_path, Inches(px), Inches(py),
+                                 width=Inches(w))
+        if image_caption:
+            tb = add_textbox(slide, px, py + h + 0.05, w, 0.22)
+            write_paragraph(tb.text_frame, image_caption,
+                            size=typo.footer_size, italic=True,
+                            color=pal.footer_gray, family=typo.family,
+                            align=PP_ALIGN.CENTER, first=True)
+    else:
+        placeholder_box(slide, shot_left, top, shot_w, shot_h,
+                        placeholder_label, placeholder_note, theme=theme)
     return slide
 
 
@@ -545,6 +578,241 @@ def add_thank_you(prs, *,
     return slide
 
 
+# ---------- bottom progress tracker ----------
+
+TRACKER_STOPS = ["WHY NOW", "THE LENS", "ACCESS", "THE PATH", "PROOF",
+                 "NEXT STEP"]
+
+
+def add_progress_tracker(slide, active_index, theme: Theme = MAX_THEME):
+    """Slim 6-stop journey bar along the very bottom edge: completed stops in
+    navy, the current stop in cyan, upcoming in gray. Lets a viewer who dozed
+    off re-orient instantly."""
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+    h = 0.17
+    top = layout.slide_height_in - h
+    n = len(TRACKER_STOPS)
+    seg_w = layout.slide_width_in / n
+    for i, name in enumerate(TRACKER_STOPS):
+        left = i * seg_w
+        if i == active_index:
+            fill, txt = pal.bright_blue, pal.white
+        elif i < active_index:
+            fill, txt = pal.dark_navy, pal.white
+        else:
+            fill, txt = pal.light_gray, pal.footer_gray
+        add_rect(slide, left, top, seg_w, h, fill=fill)
+        tb = add_textbox(slide, left + 0.06, top, seg_w - 0.12, h,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, f"{i + 1} · {name}", size=7.5,
+                        bold=(i == active_index), color=txt,
+                        family=typo.family, align=PP_ALIGN.CENTER, first=True)
+    return slide
+
+
+# ---------- three cards (full-width column version of three trends) ----------
+
+def add_three_cards(prs, *,
+                    title: str,
+                    subtitle: Optional[str] = None,
+                    cards: Sequence[dict],
+                    page_number=None, section_marker=None,
+                    source=None, footnote=None,
+                    theme: Theme = MAX_THEME):
+    """Three equal columns spanning the full width: icon chip, label, bullets.
+    Replaces the engine's left-stacked three_trends layout for webinar
+    full-screen sharing."""
+    slide = blank_slide(prs)
+    add_chrome(slide, title=title, theme=theme, page_number=page_number,
+               section_marker=section_marker, source=source, footnote=footnote)
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+
+    top = 1.55
+    if subtitle:
+        tb = add_textbox(slide, layout.margin_left_in, top,
+                         layout.slide_width_in - layout.margin_left_in
+                         - layout.margin_right_in, 0.30)
+        write_paragraph(tb.text_frame, subtitle, size=typo.body_size,
+                        color=pal.text_dark, family=typo.family, first=True)
+        top += 0.45
+
+    n = len(cards)
+    gap = 0.45
+    total_w = (layout.slide_width_in - layout.margin_left_in
+               - layout.margin_right_in)
+    card_w = (total_w - gap * (n - 1)) / n
+    card_h = layout.footer_top_in - top - 0.30
+
+    for i, c in enumerate(cards):
+        left = layout.margin_left_in + i * (card_w + gap)
+        add_rect(slide, left, top, card_w, card_h, fill=pal.soft_gray)
+        add_rect(slide, left, top, card_w, 0.12, fill=pal.bright_blue)
+        # Icon chip
+        chip_d = 0.85
+        add_oval(slide, left + (card_w - chip_d) / 2, top + 0.35,
+                 chip_d, chip_d, fill=pal.dark_navy)
+        tb = add_textbox(slide, left + (card_w - chip_d) / 2, top + 0.35,
+                         chip_d, chip_d, anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, c.get("icon", str(i + 1)),
+                        size=typo.title_size - 2, color=pal.white,
+                        family=typo.family, align=PP_ALIGN.CENTER, first=True)
+        tb = add_textbox(slide, left + 0.25, top + 1.35, card_w - 0.5, 0.45)
+        write_paragraph(tb.text_frame, c["label"], size=typo.body_size + 3,
+                        bold=True, color=pal.dark_navy, family=typo.family,
+                        align=PP_ALIGN.CENTER, first=True)
+        enable_text_shrink(tb.text_frame)
+        tb = add_textbox(slide, left + 0.35, top + 1.95, card_w - 0.7,
+                         card_h - 2.15)
+        for j, bl in enumerate(c.get("bullets", [])):
+            write_paragraph(tb.text_frame, bl, size=typo.body_size,
+                            color=pal.text_dark, family=typo.family,
+                            bullet=True, first=(j == 0), space_after=8)
+        enable_text_shrink(tb.text_frame)
+    return slide
+
+
+# ---------- recap cards (climax summary) ----------
+
+def add_recap_cards(prs, *,
+                    title: str,
+                    cards: Sequence[dict],
+                    conclusion: str,
+                    page_number=None, section_marker=None,
+                    source=None, footnote=None,
+                    theme: Theme = MAX_THEME):
+    """Three navy-headed takeaway cards + full-width navy conclusion banner."""
+    slide = blank_slide(prs)
+    add_chrome(slide, title=title, theme=theme, page_number=page_number,
+               section_marker=section_marker, source=source, footnote=footnote)
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+
+    top = 1.90
+    n = len(cards)
+    gap = 0.40
+    total_w = (layout.slide_width_in - layout.margin_left_in
+               - layout.margin_right_in)
+    card_w = (total_w - gap * (n - 1)) / n
+    card_h = 2.80
+
+    for i, c in enumerate(cards):
+        left = layout.margin_left_in + i * (card_w + gap)
+        add_rect(slide, left, top, card_w, 0.55, fill=pal.dark_navy)
+        tb = add_textbox(slide, left + 0.2, top, card_w - 0.4, 0.55,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, c["takeaway"], size=typo.body_size + 1,
+                        bold=True, color=pal.white, family=typo.family,
+                        first=True)
+        enable_text_shrink(tb.text_frame)
+        add_rect(slide, left, top + 0.55, card_w, card_h - 0.55,
+                 fill=pal.soft_gray)
+        tb = add_textbox(slide, left + 0.25, top + 0.75, card_w - 0.5,
+                         card_h - 0.95)
+        for j, bl in enumerate(c.get("bullets", [])):
+            write_paragraph(tb.text_frame, bl, size=typo.body_size,
+                            color=pal.text_dark, family=typo.family,
+                            bullet=True, first=(j == 0), space_after=8)
+        enable_text_shrink(tb.text_frame)
+
+    band_top = top + card_h + 0.35
+    add_rect(slide, layout.margin_left_in, band_top, total_w, 1.0,
+             fill=pal.deep_navy)
+    tb = add_textbox(slide, layout.margin_left_in + 0.4, band_top,
+                     total_w - 0.8, 1.0, anchor=MSO_ANCHOR.MIDDLE)
+    write_paragraph(tb.text_frame, conclusion, size=typo.body_size + 4,
+                    bold=True, color=pal.white, family=typo.family,
+                    align=PP_ALIGN.CENTER, first=True)
+    enable_text_shrink(tb.text_frame)
+    return slide
+
+
+# ---------- threshold scorecard ----------
+
+def add_scorecard_slide(prs, *,
+                        title: str,
+                        subtitle: Optional[str] = None,
+                        groups: Sequence[dict],
+                        page_number=None, section_marker=None,
+                        source=None, footnote=None,
+                        theme: Theme = MAX_THEME):
+    """Grouped criteria table with 'weak looks like' / 'strong looks like'
+    threshold phrases, so the take-home photo teaches thresholds, not just
+    labels. groups: [{name, color: 'green'|'red', rows: [{name, weak, strong}]}]"""
+    slide = blank_slide(prs)
+    add_chrome(slide, title=title, theme=theme, page_number=page_number,
+               section_marker=section_marker, source=source, footnote=footnote)
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+
+    top = 1.50
+    if subtitle:
+        tb = add_textbox(slide, layout.margin_left_in, top,
+                         layout.slide_width_in - layout.margin_left_in
+                         - layout.margin_right_in, 0.28)
+        write_paragraph(tb.text_frame, subtitle, size=typo.body_size,
+                        color=pal.text_dark, family=typo.family, first=True)
+        top += 0.40
+
+    total_w = (layout.slide_width_in - layout.margin_left_in
+               - layout.margin_right_in)
+    name_w = 3.1
+    col_w = (total_w - name_w) / 2
+    group_colors = {"green": rgb("2E7D32"), "red": rgb("C62828")}
+
+    # Header row
+    hdr_h = 0.34
+    add_rect(slide, layout.margin_left_in + name_w, top, col_w, hdr_h,
+             fill=pal.light_gray)
+    add_rect(slide, layout.margin_left_in + name_w + col_w, top, col_w, hdr_h,
+             fill=pal.dark_navy)
+    for x, label, color in (
+        (layout.margin_left_in + name_w, "WEAK LOOKS LIKE", pal.footer_gray),
+        (layout.margin_left_in + name_w + col_w, "STRONG LOOKS LIKE",
+         pal.white),
+    ):
+        tb = add_textbox(slide, x + 0.15, top, col_w - 0.3, hdr_h,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, label, size=typo.small_size, bold=True,
+                        color=color, family=typo.family, first=True)
+    y = top + hdr_h + 0.06
+
+    n_rows = sum(len(g["rows"]) for g in groups)
+    n_groups = len(groups)
+    avail = layout.footer_top_in - 0.15 - y - n_groups * 0.30
+    row_h = min(0.52, avail / n_rows)
+
+    for g in groups:
+        gc = group_colors.get(g.get("color", "green"), pal.dark_navy)
+        add_rect(slide, layout.margin_left_in, y, total_w, 0.26, fill=gc)
+        tb = add_textbox(slide, layout.margin_left_in + 0.15, y,
+                         total_w - 0.3, 0.26, anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, g["name"], size=typo.small_size,
+                        bold=True, color=pal.white, family=typo.family,
+                        first=True)
+        y += 0.30
+        for ri, row in enumerate(g["rows"]):
+            if ri % 2 == 0:
+                add_rect(slide, layout.margin_left_in, y, total_w, row_h,
+                         fill=pal.soft_gray)
+            tb = add_textbox(slide, layout.margin_left_in + 0.12, y,
+                             name_w - 0.2, row_h, anchor=MSO_ANCHOR.MIDDLE)
+            write_paragraph(tb.text_frame, row["name"], size=typo.body_size - 1,
+                            bold=True, color=pal.dark_navy,
+                            family=typo.family, first=True)
+            enable_text_shrink(tb.text_frame)
+            for x, key, color in (
+                (layout.margin_left_in + name_w, "weak", pal.footer_gray),
+                (layout.margin_left_in + name_w + col_w, "strong",
+                 pal.text_dark),
+            ):
+                tb = add_textbox(slide, x + 0.15, y, col_w - 0.3, row_h,
+                                 anchor=MSO_ANCHOR.MIDDLE)
+                write_paragraph(tb.text_frame, row[key],
+                                size=typo.body_size - 2, color=color,
+                                family=typo.family, first=True)
+                enable_text_shrink(tb.text_frame)
+            y += row_h
+    return slide
+
+
 # ---------- register everything ----------
 
 _REGISTRY.update({
@@ -556,4 +824,7 @@ _REGISTRY.update({
     "access_ladder": add_access_ladder,
     "cta_slide": add_cta_slide,
     "thank_you": add_thank_you,
+    "three_cards": add_three_cards,
+    "recap_cards": add_recap_cards,
+    "scorecard_slide": add_scorecard_slide,
 })

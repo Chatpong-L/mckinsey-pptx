@@ -43,5 +43,8 @@ MAX_THEME = replace(
     DEFAULT_THEME,
     palette=MAX_PALETTE,
     typography=replace(DEFAULT_THEME.typography, family="Arial"),
+    # Footer sits slightly higher than the engine default to clear the
+    # bottom progress tracker strip.
+    layout=replace(DEFAULT_THEME.layout, footer_top_in=6.98),
     copyright_text="© 2026 Max Solutions",
 )

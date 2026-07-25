@@ -19,13 +19,24 @@ SRC_MAXDATA = "Max Data registry analysis, July 2026 (1.99M Thai juristic person
 b = PresentationBuilder(theme=MAX_THEME)
 
 # Engine templates default footnote to a "1. xx" placeholder; this deck never
-# uses numbered footnotes, so default it off globally.
+# uses numbered footnotes, so default it off globally. Every content slide in
+# sections 1-6 also gets the bottom progress tracker so a viewer who drifted
+# off can re-orient instantly.
 _engine_add = b.add
+
+SECTION_OF = {
+    "1 · Why now": 0, "2 · The lens": 1, "3 · The access": 2,
+    "4 · The path": 3, "5 · Proof": 4, "6 · Next step": 5,
+}
 
 
 def _add(slide_type, **kw):
     kw.setdefault("footnote", None)
-    return _engine_add(slide_type, **kw)
+    slide = _engine_add(slide_type, **kw)
+    idx = SECTION_OF.get(kw.get("section_marker"))
+    if idx is not None:
+        max_slides.add_progress_tracker(slide, idx)
+    return slide
 
 
 b.add = _add
@@ -92,13 +103,13 @@ b.add("column_split_growth", **S("1 · Why now"),
       categories=[2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
       values=[42.5, 44.5, 47.7, 48.1, 44.0, 48.6, 58.6, 60.2, 64.6, 68.0],
       split_index=4,
-      growth_pct_first="+3.1%",
+      growth_pct_first="+0.9%",
       growth_pct_second="+9.1%",
-      description="Annual growth rates shown are CAGR, pre-COVID (2016-2020) vs recovery (2020-2025)",
+      description="CAGR into the COVID trough (2016-2020) vs the recovery (2020-2025)",
       takeaway_header="What it means",
       data_label="Total revenue filed by Thai companies", data_unit="฿ trillion",
       takeaways=["COVID knocked ฿4T off filed revenue in 2020",
-                 "Recovery ran at 9.1% a year, triple the pre-COVID pace",
+                 "From +0.9% a year into the trough to +9.1% a year out of it",
                  "FY2025 sits 41% above the pre-COVID peak"],
       source=SRC_MAXDATA)
 
@@ -123,10 +134,11 @@ b.add("column_comparison", **S("1 · Why now"),
                   "TV programme\nproduction", "Rubber & plastics\nwholesale",
                   "Residential\ndevelopers"],
       values=[40, 36, 26, 19, 18],
-      focus_index=4,
-      description="Industries that genuinely contracted, shown as depth of revenue decline",
+      focus_index=0,
+      label_sign="-",
+      description="Industries that genuinely contracted, ranked by depth of decline",
       takeaway_header="What it means",
-      data_label="Revenue DECLINE FY2020 to FY2025", data_unit="%",
+      data_label="Revenue decline FY2020 to FY2025", data_unit="%",
       takeaways=["No whole sector shrank in nominal terms",
                  "But these niches genuinely contracted",
                  "Real estate (+4%) and finance (+5%) declined in real terms",
@@ -158,7 +170,7 @@ b.add("overview_areas", **S("1 · Why now"),
                        "Margin up from 5.9% to 7.5%",
                        "Growth in profit, not just sales"]},
       ],
-      call_out="In logistics, fewer than 200 of 44,190 companies exceed ฿1B revenue",
+      call_out="Fewer than 200 of 44,190 logistics companies exceed ฿1B",
       source=SRC_MAXDATA)
 
 b.add("two_column_compare", **S("1 · Why now"),
@@ -184,7 +196,7 @@ b.add("two_column_compare", **S("1 · Why now"),
                   "Deal sizes in the billions",
                   "Returns measured over 10+ years",
                   "Sourced through investment banks"],
-      right_items=["Individuals and mid-size corporates buy companies",
+      right_items=["Listed corporates, mid-size firms, and individuals all buy now",
                    "SME deals: ฿10M to ฿1B revenue targets",
                    "Payback often 3 to 8 years in our deal experience",
                    "Japan grew SME succession M&A 16x in 8 years"],
@@ -202,16 +214,16 @@ b.add("column_comparison", **S("1 · Why now"),
                  "One deal, the True Corporation 25% stake, was USD 3.9B",
                  "Inbound buyers took 39% of deal value in Q4 2025",
                  "ASEAN-6 did 3,200+ deals worth USD 130B+ in 2025"],
-      source="KPMG Thailand M&A Trends, quarterly reports Q1 2025 to Q1 2026; ASEAN figure: Lyndon Advisory 2026")
+      source="KPMG Thailand M&A Trends quarterlies 2025-Q1 2026; ASEAN: Lyndon Advisory")
 
 b.add("stat_hero", **S("1 · Why now"),
       title="The succession wave is the supply side of this market",
       stat="81%",
       stat_label="of Thailand's 20-year-plus companies have no next-generation director on the board",
-      context="111,304 operating companies are more than 20 years old with every "
-              "board seat held by the pre-1984 generation. Across all 993k operating "
-              "companies, 2 of every 3 directorships sit with that generation. "
-              "Companies like these need successors. Increasingly, that means buyers.",
+      context="111,304 of the ~137,000 operating companies older than 20 years have "
+              "every board seat held by the pre-1984 generation. Across all 993k "
+              "operating companies, 2 of every 3 directorships sit with that "
+              "generation. These companies need successors. Increasingly, that means buyers.",
       source="Max Data registry analysis of 4.2M directorships, birth cohorts from national-ID structure, July 2026")
 
 b.add("kpi_dashboard", **S("1 · Why now"),
@@ -229,18 +241,14 @@ b.add("kpi_dashboard", **S("1 · Why now"),
       columns=4,
       source="NESDC via Nation Thailand 2024; Grant Thornton Thailand; METI Japan via ORIX 2025")
 
-b.add("kpi_dashboard", **S("1 · Why now"),
-      title="We saw this wave coming three years ago",
-      kpis=[
-          {"label": "SMEs advised each year", "value": "150+",
-           "delta": "across 15 industries", "delta_dir": "flat"},
-          {"label": "DealFlow community", "value": "80,000+",
-           "delta": "members and growing", "delta_dir": "up"},
-          {"label": "Live deals on our platform", "value": "100+",
-           "delta": "screened listings", "delta_dir": "up"},
-      ],
-      columns=3,
-      source="Max Solutions, July 2026")
+b.add("quote_slide", **S("1 · Why now"),
+      title="Why we started three years ago",
+      quote="We watched a generation of Thai founders build companies their "
+            "children didn't want to run. Someone had to build the bridge "
+            "between those owners and the people ready to take over.",
+      author="[Max — full name]",
+      author_title="Founder, Max Solutions · placeholder quote, edit to taste",
+      source="Max Solutions")
 
 # =====================================================================
 # SECTION 2 · WHAT GOOD LOOKS LIKE
@@ -276,10 +284,10 @@ b.add("five_key_areas", **S("2 · The lens"),
       ],
       source="Max Solutions target evaluation framework")
 
-b.add("three_trends_icons", **S("2 · The lens"),
+b.add("three_cards", **S("2 · The lens"),
       title="The Red 3: where deals die in Thailand",
       subtitle="Our deal team's kill criteria, in the order they usually surface",
-      trends=[
+      cards=[
           {"label": "Business risk", "icon": "📉",
            "bullets": ["Shrinking market or fad demand",
                        "Customer concentration in 1-2 accounts",
@@ -310,19 +318,40 @@ b.add("two_column_compare", **S("2 · The lens"),
       left_color="gray", right_color="navy",
       source="Max Solutions deal experience")
 
-b.add("comparison_table", **S("2 · The lens"),
+b.add("scorecard_slide", **S("2 · The lens"),
       title="Take this home: the 60-second target scorecard",
-      subtitle="Score any company you are shown. Green 5 up top, Red 3 below",
-      options=["Weak", "Average", "Strong"],
-      criteria=[
-          {"name": "Synergy with what you own", "scores": [1, 2, 4]},
-          {"name": "Untapped potential", "scores": [1, 2, 4]},
-          {"name": "Runs without the owner", "scores": [0, 2, 4]},
-          {"name": "Recurring revenue", "scores": [1, 3, 4]},
-          {"name": "Defensible niche", "scores": [1, 2, 4]},
-          {"name": "Business risk cleared", "scores": [0, 2, 4]},
-          {"name": "Legal risk cleared", "scores": [0, 2, 4]},
-          {"name": "Financials verified", "scores": [0, 2, 4]},
+      subtitle="Screenshot this. Rate every target Weak or Strong per line; one Weak in the Red 3 kills the deal",
+      groups=[
+          {"name": "THE GREEN 5 — SCORE THE UPSIDE", "color": "green",
+           "rows": [
+               {"name": "Synergy with what you own",
+                "weak": "Standalone business, no overlap",
+                "strong": "Multiplies your customers, licences, or capacity"},
+               {"name": "Untapped potential",
+                "weak": "Owner already squeezed everything",
+                "strong": "No marketing, no exports, obvious headroom"},
+               {"name": "Runs without the owner",
+                "weak": "Founder holds every relationship",
+                "strong": "Managers and systems run the week"},
+               {"name": "Recurring revenue",
+                "weak": "One-off projects, lumpy income",
+                "strong": "Repeat contracts and returning customers"},
+               {"name": "Defensible niche",
+                "weak": "Price war with many rivals",
+                "strong": "Few real competitors, switching costs"},
+           ]},
+          {"name": "THE RED 3 — CLEAR EVERY ONE", "color": "red",
+           "rows": [
+               {"name": "Business risk",
+                "weak": "Fad demand or 1-2 customers",
+                "strong": "Durable demand, spread customer base"},
+               {"name": "Legal risk",
+                "weak": "Licences missing or land unclear",
+                "strong": "Every permit verified in diligence"},
+               {"name": "Financial risk",
+                "weak": "Two books, unverifiable cash",
+                "strong": "Statements reconcile to bank accounts"},
+           ]},
       ],
       source="Max Solutions target evaluation framework")
 
@@ -343,17 +372,19 @@ b.add("funnel", **S("3 · The access"),
            "description": "Half the registry is already defunct or dissolved"},
           {"name": "Filing real revenue", "value": "648,304",
            "description": "Companies with revenue above zero in FY2025"},
-          {"name": "SME sweet spot ฿100M-1B", "value": "37,045",
+          {"name": "SME band ฿10M-1B", "value": "176,962",
+           "description": "The deal size this webinar is about"},
+          {"name": "Mid-market core ฿100M-1B", "value": "37,045",
            "description": "Only 1 in 18 revenue-reporting companies"},
           {"name": "Your shortlist", "value": "10-30",
            "description": "What a focused thesis and good filters produce"},
       ],
       source=SRC_MAXDATA)
 
-b.add("three_trends_icons", **S("3 · The access"),
+b.add("three_cards", **S("3 · The access"),
       title="How everyone finds deals today, and where each channel stops",
       subtitle="Each channel works. Each has a ceiling you will hit",
-      trends=[
+      cards=[
           {"label": "Word of mouth", "icon": "🤝",
            "bullets": ["Friends, suppliers, golf partners",
                        "High trust, tiny reach",
@@ -380,7 +411,7 @@ b.add("access_ladder", **S("3 · The access"),
            "bullets": ["DealFlow Market listings",
                        "Screened sellers across 15 industries",
                        "Thailand's leading M&A marketplace"]},
-          {"name": "Advisory", "stat": "150 SMEs / year",
+          {"name": "Advisory", "stat": "150+ SMEs/yr",
            "bullets": ["Full-mandate M&A advisory",
                        "Our deal team runs the process end to end",
                        "For buyers and sellers who are serious"]},
@@ -428,8 +459,9 @@ b.add("screenshot_slide", **S("3 · The access"),
       title="Max Data in 90 seconds",
       placeholder_label="Screenshot or live demo: Max Data screener",
       placeholder_note="Suggested demo: Logistics, revenue ฿10M-1B → 9,399 live targets",
-      bullets=["Type a thesis, get a shortlist in seconds",
+      bullets=["Type a thesis, get a first-cut list in seconds",
                "Every company: financials, directors, growth, red flags",
+               "Corp-dev and IR teams: a board-ready target map in one afternoon",
                "Built by our deal team for real transactions, not just research"],
       stats=[{"value": "1.99M", "label": "companies tracked"},
              {"value": "9.8M", "label": "financial statements"},
@@ -446,6 +478,7 @@ b.add("section_divider", section_number="04",
 
 b.add("process_flow_horizontal", **S("4 · The path"),
       title="The buy-side path: six steps from thesis to keys",
+      subtitle="In our experience a focused buyer goes thesis-to-keys in roughly 6 to 12 months",
       steps=[
           {"name": "Thesis",
            "description": "What you want to own and why. One page, honest"},
@@ -517,7 +550,7 @@ b.add("case_slide", **S("5 · Proof"),
                "Owners exited proud, business on an IPO-track plan"],
       kpis=[{"value": "฿100M", "label": "Revenue at deal"},
             {"value": "฿30M", "label": "EBITDA at deal"},
-            {"value": "months", "label": "To visible turnaround"}],
+            {"value": "< 6 mo", "label": "To visible turnaround"}],
       photo_label=None,
       source="Max Solutions deal team, 2026. Figures approximate to protect the parties")
 
@@ -532,22 +565,22 @@ b.add("case_slide", **S("5 · Proof"),
       outcome=["Foreign buyer acquired end to end through our process",
                "Smooth handover, customers retained",
                "Now on its way to doubling turnover"],
-      kpis=[{"value": "End-to-end", "label": "Run by our deal team"},
-            {"value": "Recurring", "label": "Customer base"},
-            {"value": "2x", "label": "Turnover trajectory"}],
+      kpis=[{"value": "2x", "label": "Turnover trajectory"},
+            {"value": "Q1 2026", "label": "Deal closed"},
+            {"value": "Top 3", "label": "Google rank in its niche"}],
       source="Max Solutions deal team, 2026. Figures approximate to protect the parties")
 
-b.add("three_trends_numbered", **S("5 · Proof"),
+b.add("three_cards", **S("5 · Proof"),
       title="Why small deals turn around so fast",
       subtitle="The pattern behind both cases, and most of our closed deals",
-      trends=[
-          {"label": "Succession creates honest sellers",
+      cards=[
+          {"label": "Honest sellers", "icon": "1",
            "bullets": ["Owners sell because of age, not because the business is broken",
                        "Price reflects the exit need, not a bidding war"]},
-          {"label": "Inefficiency is the upside",
+          {"label": "Inefficiency is the upside", "icon": "2",
            "bullets": ["No ERP, no marketing, no pricing discipline",
                        "Basic modernization moves margins in months"]},
-          {"label": "Capable buyers compound it",
+          {"label": "Capable buyers compound it", "icon": "3",
            "bullets": ["Corporate resources or sharp operators unlock value fast",
                        "SME payback in 3-8 years vs 10+ on mega-deals"]},
       ],
@@ -563,7 +596,7 @@ b.add("two_column_compare", **S("5 · Proof"),
                   "Your edge = who you happen to know"],
       right_items=["Screen 993k operating companies against your thesis",
                    "10 years of financials before the first call",
-                   "A shortlist in an afternoon",
+                   "A vetted shortlist in an afternoon, not months of calls",
                    "Your edge = seeing what others cannot"],
       right_color="blue",
       source="Max Data platform, July 2026")
@@ -576,9 +609,9 @@ b.add("section_divider", section_number="06",
       section_title="Your next step",
       subtitle="Three frameworks to keep, one action to take tonight")
 
-b.add("executive_summary_takeaways", **S("6 · Next step"),
+b.add("recap_cards", **S("6 · Next step"),
       title="What you now have",
-      sections=[
+      cards=[
           {"takeaway": "A reason to move now",
            "bullets": ["Post-COVID winners and laggards are visible in the data",
                        "The succession wave is bringing good companies to market"]},
@@ -589,31 +622,34 @@ b.add("executive_summary_takeaways", **S("6 · Next step"),
            "bullets": ["Community → Marketplace → Advisory, plus the Max Data layer",
                        "The 6-step path from thesis to keys"]},
       ],
-      final_conclusion="The buyers who win the succession wave are the ones who start looking before everyone else.")
+      conclusion="The buyers who win the succession wave are the ones who start looking before everyone else.")
 
 b.add("cta_slide", **S("6 · Next step"),
       title="Do one of these before you log off",
       paths=[
-          {"who": "BUYERS & INVESTORS", "action": "Book a free opportunity scan",
-           "detail": "We map live targets and market data against your thesis in one session."},
-          {"who": "OWNERS", "action": "Get a confidential valuation talk",
+          {"who": "1 · BUYERS & INVESTORS", "action": "Book a free opportunity scan",
+           "detail": "We map live targets against your thesis, in a session your board can act on."},
+          {"who": "2 · OWNERS", "action": "Get a confidential valuation talk",
            "detail": "Know what your business is worth and what buyers would flag, no obligation."},
-          {"who": "EVERYONE", "action": "Join the DealFlow community",
+          {"who": "3 · CONNECTORS & EVERYONE", "action": "Join the DealFlow community",
            "detail": "80,000+ members. And if you refer a buyer or seller, our referral program pays you."},
       ],
-      bottom_actions=["Type 1 in the chat and our team will contact you tomorrow",
+      bottom_actions=["Type 1 (buying), 2 (selling), or 3 (referring) in the chat — our team follows up tomorrow",
                       "Or scan the QR / add our LINE official account now"],
       qr_label="QR: booking page")
 
-b.add("dark_navy_summary",
-      body="Q&A: ask us anything. The QR stays on screen, and we stay until your questions run out.",
-      eyebrow="Thailand's Hidden M&A Opportunity",
-      corner_text="Max Solutions")
+_qa = b.add("dark_navy_summary",
+            body="Q&A: ask us anything. The QR stays on screen, and we stay until your questions run out.",
+            eyebrow="Thailand's Hidden M&A Opportunity",
+            corner_text="Max Solutions")
+# Keep the promised QR physically on screen through the 20-minute Q&A dwell.
+max_slides.placeholder_box(_qa, 9.6, 4.7, 3.0, 2.3,
+                           "QR: booking page", "Type 1 / 2 / 3 in the chat")
 
 b.add("thank_you",
       lines=["Max Solutions · DealFlow Market · Max Data",
              "Thank you for spending your Sunday evening with us"],
-      contact_placeholder="Contact block: LINE ID, email, phone, website")
+      contact_placeholder="Contact + booking QR: LINE ID, email, phone, website")
 
 # =====================================================================
 # APPENDIX
@@ -701,7 +737,7 @@ NOTES = {
     12: "Credibility beat: this is KPMG data published last month. Note: headlines are big-cap, our layer is the SME market below them.",
     13: "SLOW DOWN. This is the screenshot slide. Read the stat twice. 'No one else in Thailand can compute this number.'",
     14: "Public-record confirmation of our registry finding. The Japan tile is the preview of Thailand's next decade.",
-    15: "Founding story, 45 seconds max: 'we saw the wave three years ago.' [T+0:19]",
+    15: "Founding story, 45 seconds max. Read the quote, add one personal line, move on. [T+0:19]",
     16: "Section 2 · WHAT GOOD LOOKS LIKE. Budget 15 minutes. [T+0:19]",
     17: "Launch poll 2. Callback comes at the Red 3 slide: most people vote financials, and financials is where deals die.",
     18: "One concrete example per flag. Ask chat: 'which of these do you weight most?'",
@@ -728,7 +764,7 @@ NOTES = {
     39: "Callback to the demo: 'your edge is seeing what others cannot.' [T+1:04]",
     40: "Section 6 · YOUR NEXT STEP. Budget 6 minutes. [T+1:06]",
     41: "Three take-homes. Second screenshot moment.",
-    42: "THE ask. Type 1 / scan QR / add LINE. Say it twice. Keep the QR visible through Q&A. [T+1:08]",
+    42: "THE ask. Type 1 (buy) / 2 (sell) / 3 (refer), scan QR, or add LINE. Say it twice. QR stays up through Q&A. [T+1:08]",
     43: "About 20 minutes. Seed questions ready: 'what multiples do Thai SMEs sell for?', 'can foreigners buy?', 'how long does a deal take?'",
     44: "Mention the replay and community link land in tomorrow's follow-up email.",
     45: "Appendix: replay material. Skip live unless Q&A pulls them up.",

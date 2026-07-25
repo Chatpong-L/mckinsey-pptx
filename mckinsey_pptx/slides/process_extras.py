@@ -40,7 +40,7 @@ def add_process_flow_horizontal(prs, *,
                          layout.slide_width_in - layout.margin_left_in
                          - layout.margin_right_in, 0.32)
         write_paragraph(tb.text_frame, subtitle, size=typo.body_size,
-                        color=pal.placeholder_gray, family=typo.family,
+                        color=pal.text_dark, family=typo.family,
                         first=True)
 
     width = layout.slide_width_in - layout.margin_left_in - layout.margin_right_in
@@ -51,7 +51,11 @@ def add_process_flow_horizontal(prs, *,
     chev_h = 0.85
     overlap = 0.30
     chev_w = (width + (n - 1) * overlap) / n
-    chev_y = body_top
+    # Center the band + description block vertically instead of stranding it
+    # in the top third of the slide.
+    has_meta = any(st.get("meta") for st in steps)
+    block_h = chev_h + 0.20 + 1.1 + (0.35 if has_meta else 0.0)
+    chev_y = body_top + max(0.0, (body_bottom - body_top - block_h) / 2)
     # Alternate fills for visual rhythm
     fills = [pal.deep_navy, pal.bright_blue, pal.deep_navy, pal.bright_blue,
              pal.deep_navy, pal.bright_blue]
@@ -87,10 +91,18 @@ def add_process_flow_horizontal(prs, *,
         # Description below
         desc_top = chev_y + chev_h + 0.20
         tb = add_textbox(slide, cx + 0.10, desc_top,
-                         chev_w - overlap - 0.10, body_bottom - desc_top - 0.10)
+                         chev_w - overlap - 0.10, 1.1)
         write_paragraph(tb.text_frame, st.get("description", ""),
                         size=typo.body_size - 1, color=pal.text_dark,
                         family=typo.family, first=True)
+        # Optional meta line (e.g. typical duration) under the description
+        if st.get("meta"):
+            tb = add_textbox(slide, cx + 0.10, desc_top + 1.12,
+                             chev_w - overlap - 0.10, 0.30)
+            write_paragraph(tb.text_frame, st["meta"],
+                            size=typo.small_size, bold=True,
+                            color=pal.bright_blue, family=typo.family,
+                            first=True)
     return slide
 
 
@@ -223,6 +235,11 @@ def add_kpi_dashboard(prs, *,
     gap = 0.20
     tile_w = (width - (cols - 1) * gap) / cols
     tile_h = (body_h - (rows - 1) * gap) / rows
+    # Cap tile height and center the grid so a single row doesn't stretch
+    # into tall tiles full of dead space.
+    tile_h = min(tile_h, 2.7)
+    grid_h = rows * tile_h + (rows - 1) * gap
+    body_top += (body_h - grid_h) / 2
 
     delta_color_map = {
         "up": pal.status_green,

@@ -121,7 +121,8 @@ def _draw_description_header(slide, theme, *, left, top, width, label="Descripti
 
 def _draw_axis_and_bars(slide, theme, *, chart_box, data_label,
                         data_unit, categories, values, focus_index=None,
-                        forecast_from_index=None, legend=None):
+                        forecast_from_index=None, legend=None,
+                        label_sign=""):
     """Returns (x_for_each_bar_center, baseline_y, bar_w, top_y, max_val).
 
     Negative values not supported (templates don't show them)."""
@@ -201,11 +202,14 @@ def _draw_axis_and_bars(slide, theme, *, chart_box, data_label,
         add_rect(slide, bar_left, bar_top, bar_w, bar_h, fill=fill)
 
         # Value label above the bar. Small non-integer values keep one decimal
-        # so e.g. 7.9 doesn't display as a misleading 8.
-        if abs(val) < 10 and float(val) != int(val):
-            val_text = f"{val:.1f}"
+        # so e.g. 7.9 doesn't display as a misleading 8; if any value in the
+        # series is fractional, the whole series keeps one decimal for
+        # consistency (1.0, not 1, next to 3.4).
+        series_decimal = any(abs(v) < 10 and float(v) != int(v) for v in values)
+        if series_decimal and abs(val) < 10:
+            val_text = f"{label_sign}{val:.1f}"
         else:
-            val_text = f"{int(round(val))}"
+            val_text = f"{label_sign}{int(round(val))}"
         tb = add_textbox(slide, bar_left - 0.2, bar_top - 0.30,
                          bar_w + 0.4, 0.25,
                          anchor=MSO_ANCHOR.BOTTOM)
@@ -281,6 +285,7 @@ def add_column_comparison(prs, *,
                           takeaways: Sequence[str] = (),
                           description: str = "Description",
                           takeaway_header: str = "Key takeaways/main conclusion",
+                          label_sign: str = "",
                           page_number=None, section_marker=None,
                           source="xx", footnote="1. xx",
                           theme: Theme = DEFAULT_THEME):
@@ -294,7 +299,7 @@ def add_column_comparison(prs, *,
     _draw_axis_and_bars(slide, theme, chart_box=DEFAULT_CHART_BOX,
                         data_label=data_label, data_unit=data_unit,
                         categories=categories, values=values,
-                        focus_index=focus_index)
+                        focus_index=focus_index, label_sign=label_sign)
     _draw_takeaway(slide, theme, takeaways=takeaways, header=takeaway_header)
     return slide
 
@@ -366,9 +371,9 @@ def add_column_split_growth(prs, *,
             return baseline - (v / axis_top) * (baseline - plot_top)
         # First arrow (sits above the data labels in its segment)
         _draw_growth_arrow(slide, theme,
-                           x1=centers[0], y1=_y(values[0]) - 0.45,
+                           x1=centers[0], y1=_y(values[0]) - 0.62,
                            x2=centers[split_index] + 0.10,
-                           y2=_y(values[split_index]) - 0.55,
+                           y2=_y(values[split_index]) - 0.72,
                            label_pct=growth_pct_first,
                            color=theme.palette.dark_navy)
         # Second arrow
