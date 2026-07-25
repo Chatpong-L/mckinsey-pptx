@@ -86,7 +86,7 @@ b.add("poll_slide", **S("Welcome"),
                "Advisor, banker, or connector",
                "Exploring M&A for the first time"],
       instruction="Vote now in the poll panel",
-      ornament_path=f"{GEN}/backdrops/poll-corner.png")
+      ornament_path=f"{GEN}/backdrops/poll-corner-alpha.png")
 
 b.add("route_map", **S("Agenda"),
       title="Tonight's map: six stops",
@@ -158,9 +158,9 @@ b.add("column_split_growth", **S("1 · Why now"),
       categories=[2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025],
       values=[42.5, 44.5, 47.7, 48.1, 44.0, 48.6, 58.6, 60.2, 64.6, 68.0],
       split_index=4,
-      growth_pct_first="+0.9%",
+      growth_pct_first="+4.2%",
       growth_pct_second="+9.1%",
-      description="COVID knocked ฿4T off the market. The recovery ran at 9.1% a year, and FY2025 sits 41% above the pre-COVID peak",
+      description="COVID knocked ฿4T off. The recovery ran 9.1% a year, double the old pace, and FY2025 is 41% above the peak",
       takeaway_header=None,
       axis=False,
       bar_colors=["steel", "steel", "steel", "steel", "pale",
@@ -170,7 +170,7 @@ b.add("column_split_growth", **S("1 · Why now"),
 
 b.add("hbar_ranked", **S("1 · Why now"),
       title="The winners: five industries that took off after COVID",
-      takeaway="Tourism reopening powers the top two. Wholesale & retail added the most baht: ฿33.5T in FY2025.",
+      takeaway="Tourism reopening powers the top two. Wholesale & retail is the biggest in baht: ฿33.5T of FY2025 revenue.",
       unit_note="Revenue growth FY2020 to FY2025, %",
       items=[
           {"label": "Accommodation & food", "value": 141, "display": "+141%"},
@@ -186,7 +186,7 @@ b.add("hbar_ranked", **S("1 · Why now"),
 b.add("hbar_ranked", **S("1 · Why now"),
       title="The laggards: where value is quietly leaking",
       takeaway="Weak segments are where motivated sellers live.",
-      unit_note="Revenue decline FY2020 to FY2025, %. No whole sector shrank in nominal terms; these niches did",
+      unit_note="Revenue decline FY2020 to FY2025, %. No whole sector shrank in nominal terms, but these niches did",
       direction="left",
       items=[
           {"label": "Own-account investment", "value": 40, "display": "-40%"},
@@ -260,10 +260,10 @@ b.add("feature_pick", **S("1 · Why now"),
       runners=[
           {"name": "Cafés & beverage stands",
            "stat": "+288%",
-           "note": "Fastest sub-industry in our screen: ฿8B to ฿32B, companies nearly doubled"},
+           "note": "Fastest sub-industry in our screen: ฿8.2B to ฿31.9B, companies nearly doubled"},
           {"name": "Meat & poultry processing",
            "stat": "+126%",
-           "note": "Revenue up every single year; margin turned positive in FY2024"},
+           "note": "Revenue up every single year, and margin turned positive in FY2024"},
           {"name": "Bakery products",
            "stat": "198",
            "note": "Mid-market companies at ฿10M-1B: the deepest acquisition bench in food"},
@@ -301,7 +301,7 @@ b.add("column_comparison", **S("1 · Why now"),
       categories=["Q1 2025", "Q2 2025", "Q3 2025", "Q4 2025", "Q1 2026"],
       values=[1.0, 3.4, 2.5, 1.3, 7.9],
       focus_index=4,
-      description="Q1 2026: USD 7.9B across 57 deals, six times the prior quarter. One deal, True Corporation's 25% stake, was USD 3.9B",
+      description="Q1 2026: 57 deals worth USD 7.9B. Even without True Corporation's USD 3.9B stake sale, the quarter beats every quarter of 2025",
       takeaway_header=None,
       axis=False,
       data_label="Announced Thailand deal value", data_unit="USD billions",
@@ -365,7 +365,7 @@ b.add("poll_slide", **S("2 · The lens"),
                "The customers and recurring revenue",
                "The competition around it"],
       instruction="Vote now. We'll show you our order in a minute",
-      ornament_path=f"{GEN}/backdrops/poll-corner.png")
+      ornament_path=f"{GEN}/backdrops/poll-corner-alpha.png")
 
 b.add("chevron_flags", **S("2 · The lens"),
       title="The Green 5: what our analysts look for in every target",
@@ -407,7 +407,7 @@ b.add("ledgers", **S("2 · The lens"),
 
 b.add("scorecard_slide", **S("2 · The lens"),
       title="Take this home: the 60-second target scorecard",
-      subtitle="Screenshot this. Rate every target Weak or Strong per line; one Weak in the Red 3 kills the deal",
+      subtitle="Screenshot this. Rate every target Weak or Strong per line. One Weak in the Red 3 kills the deal",
       groups=[
           {"name": "THE GREEN 5 · SCORE THE UPSIDE", "color": "green",
            "rows": [
@@ -623,7 +623,7 @@ b.add("poll_slide", **S("5 · Proof"),
                "I own a business that needs a successor",
                "I connect people and want the referral fee"],
       instruction="Vote now. The cases coming up cover all four",
-      ornament_path=f"{GEN}/backdrops/poll-corner.png")
+      ornament_path=f"{GEN}/backdrops/poll-corner-alpha.png")
 
 b.add("profile_cards", **S("5 · Proof"),
       title="The supply is real: companies like these are in the registry right now",
@@ -654,6 +654,8 @@ b.add("profile_cards", **S("5 · Proof"),
                      "2 directors, both born before 1984"]},
       ],
       disclaimer="Real registry rows, anonymized. Revenue rounded to ฿10M, margins to whole %. "
+                 "Chips show the four sectors this room plays in, and 3,416 more matches sit in other "
+                 "sectors. The screen floors revenue at ฿50M to keep targets bankable. "
                  "Our deal team holds the full list.",
       source=SRC_MAXDATA)
 
@@ -676,14 +678,14 @@ b.add("case_slide", **S("5 · Proof"),
       sector_chip="FIRE SAFETY / TRADING",
       situation=["Husband-and-wife owners near retirement, no successor",
                  "฿100M revenue, ฿30M EBITDA, decades of relationships",
-                 "One of only 112 fire-safety companies tracked in Max Data"],
+                 "One of only 112 registered fire-safety distributors in Thailand"],
       outcome=["New owner modernized systems within months",
                "Employees stayed, morale improved",
                "Owners exited proud, business on an IPO-track plan"],
       bridge_stat="< 6 months to visible turnaround",
       kpis=[{"value": "฿100M", "label": "Revenue at deal"},
             {"value": "฿30M", "label": "EBITDA at deal"},
-            {"value": "112", "label": "fire-safety companies tracked"}],
+            {"value": "112", "label": "registered fire-safety distributors"}],
       photo_label=None,
       photo_path=f"{GEN}/scenes/case-fire.png",
       source="Max Solutions deal team, 2026. Figures approximate to protect the parties")
@@ -700,7 +702,7 @@ b.add("case_slide", **S("5 · Proof"),
                "Now on its way to doubling turnover"],
       bridge_stat="2x turnover trajectory",
       kpis=[{"value": "Top 3", "label": "Google rank in its niche"},
-            {"value": "94", "label": "kitchen-equipment suppliers tracked"}],
+            {"value": "94", "label": "kitchen-equipment suppliers nationwide"}],
       photo_path=f"{GEN}/scenes/case-oven.png",
       source="Max Solutions deal team, 2026. Figures approximate to protect the parties")
 
@@ -715,29 +717,9 @@ _sl_caus = b.add("causality_band", **S("5 · Proof"),
           {"label": "Capable buyers",
            "support": "Corporate resources or sharp operators"},
       ],
-      result="Margins move in months, not years. SME payback: 3-8 years vs 10+ on mega-deals",
+      result="Margins move in months, not years. You watched FireGuard do it in under six",
       source="Max Solutions deal experience across 150+ SME mandates per year")
 _pic(_sl_caus, f"{GEN}/scenes/succession.png", 4.97, 4.85, 3.4, 1.35)
-
-b.add("dimension_table", **S("5 · Proof"),
-      title="Sourcing then vs now: what the data layer changes",
-      left_header="The old way", right_header="With Max Data",
-      check_right=True,
-      rows=[
-          {"dim": "Sourcing",
-           "left": "Call owners one by one, hope",
-           "right": "Screen 993k companies against your thesis"},
-          {"dim": "Financials",
-           "left": "Guesswork until diligence",
-           "right": "10 years of statements before the first call"},
-          {"dim": "Speed",
-           "left": "Months to build a list",
-           "right": "A vetted shortlist in an afternoon"},
-          {"dim": "Your edge",
-           "left": "Who you happen to know",
-           "right": "Seeing what others cannot"},
-      ],
-      source="Max Data platform, July 2026")
 
 # =====================================================================
 # SECTION 6 · ACT
@@ -915,7 +897,7 @@ NOTES = {
     7: "Big line: 'COVID knocked four trillion baht off the market. The recovery ran at nine percent a year.'",
     8: "Pause on the gold factoid. Chat prompt: 'type your industry in the chat.'",
     9: "Frame positively: weak segments are where motivated sellers live. Don't dwell, next slide is the room's own sectors.",
-    10: "This room's four sectors. Logistics people: 9,399 mid-market targets is YOUR number. Move briskly, the drill-down is next.",
+    10: "This room's four sectors. Logistics people: 9,399 mid-market targets is YOUR number. If asked about the +7.5% logistics margin: airports lift it, ex-airports the sector runs low single digits. Move briskly, the drill-down is next.",
     11: "The nuance slide: growth and profit are different places in logistics. 3PL is the clean story; couriers grew broke. 90 seconds.",
     12: "One hero, three runners. Pet food is the 'growth AND margin' proof. Mention the artifact-stripping line: that's analyst rigor.",
     13: "90 seconds max. The room knows this distinction, it's a bridge slide.",
@@ -948,15 +930,14 @@ NOTES = {
     40: "Tell it as a story: the couple, no successor, the sharp buyer, the New Year visit where everyone was happy.",
     41: "Contrast case: foreign buyer, end-to-end process, now doubling turnover.",
     42: "Generalize the pattern: succession + inefficiency + capable buyer.",
-    43: "Callback to the demo: 'your edge is seeing what others cannot.' [T+1:06]",
-    44: "Section 6 · YOUR NEXT STEP. Budget 6 minutes. [T+1:08]",
-    45: "Three take-homes. Second screenshot moment.",
-    46: "Lanes slide: sweep once left to right, 'from us doing everything to you running it all yourself.' Then the hook, unhurried: 'first five bookings get a customized session.' [T+1:03]",
-    47: "THE ask. Type 1 (buy) / 2 (sell) / 3 (refer), scan QR, or add LINE. Say it twice. QR stays up through Q&A. [T+1:10]",
-    48: "About 20 minutes. Seed questions ready: 'what multiples do Thai SMEs sell for?', 'can foreigners buy?', 'how long does a deal take?'",
-    49: "Personal beat. Read the groups briskly and warmly, then slow right down for the last line. Look at the camera for Pim's line.",
-    50: "Mention the replay and community link land in tomorrow's follow-up email.",
-    51: "Appendix: replay material. Skip live unless Q&A pulls them up.",
+    43: "Section 6 · YOUR NEXT STEP. Budget 6 minutes. [T+1:08]",
+    44: "Three take-homes. Second screenshot moment.",
+    45: "Lanes slide: sweep once left to right, 'from us doing everything to you running it all yourself.' Then the hook, unhurried: 'first five bookings get a customized session.' [T+1:03]",
+    46: "THE ask. Type 1 (buy) / 2 (sell) / 3 (refer), scan QR, or add LINE. Say it twice. QR stays up through Q&A. [T+1:10]",
+    47: "About 20 minutes. Seed questions ready: 'what multiples do Thai SMEs sell for?', 'can foreigners buy?', 'how long does a deal take?'",
+    48: "Personal beat. Read the groups briskly and warmly, then slow right down for the last line. Look at the camera for Pim's line.",
+    49: "Mention the replay and community link land in tomorrow's follow-up email.",
+    50: "Appendix: replay material. Skip live unless Q&A pulls them up.",
 }
 
 for _i, _slide in enumerate(b.prs.slides, 1):
