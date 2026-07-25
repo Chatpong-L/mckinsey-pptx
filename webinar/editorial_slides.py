@@ -970,6 +970,113 @@ def add_audience_map(prs, *,
     return slide
 
 
+# ---------- 46 · service spectrum (three lanes) ----------
+
+def add_service_spectrum(prs, *,
+                         title: str,
+                         axis_left: str,
+                         axis_right: str,
+                         lanes: Sequence[dict],
+                         band_text: str,
+                         band_chip: Optional[str] = None,
+                         page_number=None, section_marker=None,
+                         source=None, footnote=None,
+                         theme: Theme = MAX_THEME):
+    """Hand-holding spectrum: three offer lanes along a support axis.
+    lanes: [{icon, kicker, name, line, bullets(2), stat, stat_label}] ordered
+    most-supported -> most self-serve."""
+    slide = blank_slide(prs)
+    add_chrome(slide, title=title, theme=theme, page_number=page_number,
+               section_marker=section_marker, source=source, footnote=footnote)
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+    ml = layout.margin_left_in
+    right = layout.slide_width_in - layout.margin_right_in
+
+    # support axis
+    ax_y = 1.66
+    add_line(slide, ml, ax_y, right, ax_y, color=pal.grid_gray, width_pt=1.5)
+    add_rect(slide, ml, ax_y - 0.045, 0.9, 0.09, fill=pal.deep_navy)
+    add_rect(slide, right - 0.9, ax_y - 0.045, 0.9, 0.09,
+             fill=pal.bright_blue)
+    tb = add_textbox(slide, ml, ax_y - 0.40, 4.5, 0.28)
+    write_paragraph(tb.text_frame, axis_left.upper(), size=typo.small_size,
+                    bold=True, color=pal.deep_navy, family=typo.family,
+                    first=True)
+    tb = add_textbox(slide, right - 4.5, ax_y - 0.40, 4.5, 0.28)
+    write_paragraph(tb.text_frame, axis_right.upper(), size=typo.small_size,
+                    bold=True, color=pal.bright_blue, family=typo.family,
+                    align=PP_ALIGN.RIGHT, first=True)
+
+    # three lane panels
+    n = len(lanes)
+    gap = 0.35
+    p_w = (right - ml - gap * (n - 1)) / n
+    p_top, p_h = 2.02, 3.42
+    fills = [pal.deep_navy, rgb("0A3A73"), None]
+    for i, ln in enumerate(lanes):
+        x = ml + i * (p_w + gap)
+        dark = fills[i] is not None
+        if dark:
+            add_rect(slide, x, p_top, p_w, p_h, fill=fills[i])
+        else:
+            add_rect(slide, x, p_top, p_w, p_h, fill=pal.white,
+                     line=pal.bright_blue, line_width=1.5)
+        fg = pal.white if dark else pal.dark_navy
+        sub = pal.light_blue if dark else pal.footer_gray
+        if ln.get("icon") and os.path.exists(ln["icon"]):
+            slide_icon(slide, ln["icon"], x + 0.3, p_top + 0.28, 0.52)
+        tb = add_textbox(slide, x + 0.95, p_top + 0.30, p_w - 1.1, 0.26)
+        write_paragraph(tb.text_frame, ln["kicker"].upper(),
+                        size=typo.small_size,
+                        bold=True, color=pal.bright_blue,
+                        family=typo.family, first=True)
+        tb = add_textbox(slide, x + 0.95, p_top + 0.56, p_w - 1.1, 0.34)
+        write_paragraph(tb.text_frame, ln["name"], size=typo.body_size + 3,
+                        bold=True, color=fg, family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
+        add_line(slide, x + 0.3, p_top + 1.06, x + p_w - 0.3, p_top + 1.06,
+                 color=pal.bright_blue if not dark else rgb("14508C"),
+                 width_pt=1.0)
+        tb = add_textbox(slide, x + 0.3, p_top + 1.20, p_w - 0.6, 0.62)
+        write_paragraph(tb.text_frame, ln["line"], size=typo.body_size + 1,
+                        bold=True, color=fg, family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
+        tb = add_textbox(slide, x + 0.3, p_top + 1.88, p_w - 0.6, 0.86)
+        for j, bl in enumerate(ln.get("bullets", ())[:2]):
+            write_paragraph(tb.text_frame, bl, size=typo.body_size - 1,
+                            color=sub, family=typo.family, bullet=True,
+                            first=(j == 0), space_after=5)
+        enable_text_shrink(tb.text_frame)
+        tb = add_textbox(slide, x + 0.3, p_top + p_h - 0.68, p_w - 0.6, 0.40)
+        write_paragraph(tb.text_frame, ln["stat"], size=20, bold=True,
+                        color=pal.bright_blue, family=typo.family, first=True)
+        tb = add_textbox(slide, x + 0.3, p_top + p_h - 0.30, p_w - 0.6, 0.24)
+        write_paragraph(tb.text_frame, ln["stat_label"].upper(), size=8.5,
+                        color=sub, family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
+
+    # conversion band with scarcity chip
+    b_y = p_top + p_h + 0.28
+    add_rect(slide, ml, b_y, right - ml, 0.85, fill=pal.deep_navy)
+    chip_w = 2.35
+    tb = add_textbox(slide, ml + 0.35, b_y, right - ml - chip_w - 1.0, 0.85,
+                     anchor=MSO_ANCHOR.MIDDLE)
+    write_paragraph(tb.text_frame, band_text, size=typo.body_size + 1,
+                    bold=True, color=pal.white, family=typo.family,
+                    first=True)
+    enable_text_shrink(tb.text_frame)
+    if band_chip:
+        cx = right - chip_w - 0.25
+        add_rect(slide, cx, b_y + 0.19, chip_w, 0.47, fill=pal.bright_blue)
+        tb = add_textbox(slide, cx, b_y + 0.19, chip_w, 0.47,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, band_chip.upper(),
+                        size=typo.small_size + 1, bold=True,
+                        color=rgb("022859"), family=typo.family,
+                        align=PP_ALIGN.CENTER, first=True)
+    return slide
+
+
 # ---------- 20 · Green 5 chevron signal bar ----------
 
 def add_chevron_flags(prs, *,
@@ -1833,6 +1940,7 @@ def add_method_grid(prs, *,
 _REGISTRY.update({
     "art_divider": add_art_divider,
     "audience_map": add_audience_map,
+    "service_spectrum": add_service_spectrum,
     "route_map": add_route_map,
     "speaker_panels": add_speaker_panels,
     "hbar_ranked": add_hbar_ranked,

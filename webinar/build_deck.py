@@ -255,7 +255,7 @@ b.add("feature_pick", **S("1 · Why now"),
                     {"value": "10.3%", "label": "net margin FY2025"},
                     {"value": "฿80B", "label": "FY2025 revenue, 258 companies"}],
           "line": "Margins held at 7% or better in every one of the last six years",
-          "icon": _ic("food"),
+          "icon": _ic("food-white"),
       },
       runners=[
           {"name": "Cafés & beverage stands",
@@ -272,10 +272,9 @@ b.add("feature_pick", **S("1 · Why now"),
              "growth leaders in manufacturing fail that test and are excluded.",
       source=SRC_MAXDATA)
 
-_sl_fork = b.add("fork_road", **S("1 · Why now"),
+b.add("fork_road", **S("1 · Why now"),
       title="Two roads to growth, and only one of them is fast",
       source="Max Solutions M&A advisory practice")
-_pic(_sl_fork, f"{GEN}/scenes/family-shop.png", 9.15, 4.32, 3.45, 1.38)
 
 b.add("dimension_table", **S("1 · Why now"),
       title="M&A used to be a big-company game. Not anymore",
@@ -488,13 +487,13 @@ b.add("ceilings", **S("3 · The access"),
 b.add("access_ladder", **S("3 · The access"),
       title="Our answer: three doors, one ecosystem",
       steps=[
-          {"kicker": "Door 1 · Community", "icon": _ic("door"), "stat": "80,000+ members",
+          {"kicker": "Door 1 · Community", "icon": _ic("door-white"), "stat": "80,000+ members",
            "bullets": ["DealFlow Facebook community",
                        "Off-market chatter surfaces here first"]},
-          {"kicker": "Door 2 · Marketplace", "icon": _ic("door"), "stat": "100+ live deals",
+          {"kicker": "Door 2 · Marketplace", "icon": _ic("door-white"), "stat": "100+ live deals",
            "bullets": ["DealFlow Market listings",
                        "Screened sellers, 15 industries"]},
-          {"kicker": "Door 3 · Advisory", "icon": _ic("door"), "stat": "150+ SMEs/yr",
+          {"kicker": "Door 3 · Advisory", "icon": _ic("door-white"), "stat": "150+ SMEs/yr",
            "bullets": ["Full-mandate M&A advisory",
                        "Our deal team runs it end to end"]},
       ],
@@ -761,6 +760,37 @@ b.add("recap_cards", **S("6 · Next step"),
       ],
       conclusion="The buyers who win the succession wave start looking before everyone else.")
 
+b.add("service_spectrum", **S("6 · Next step"),
+      title="Research and sourcing from here: three lanes, one call",
+      axis_left="We carry the work",
+      axis_right="You run it yourself",
+      lanes=[
+          {"icon": _ic("handshake-white"), "kicker": "Full-mandate advisory",
+           "name": "Max Solutions",
+           "line": "We do everything with you: research, sourcing, "
+                   "negotiation, close.",
+           "bullets": ["A dedicated deal team on your mandate end to end",
+                       "You decide, we run the machine"],
+           "stat": "150+", "stat_label": "SME mandates a year"},
+          {"icon": _ic("storefront-white"), "kicker": "Screened marketplace",
+           "name": "DealFlow Market",
+           "line": "You screen the deals yourself, we keep them real.",
+           "bullets": ["Live, verified listings with real numbers",
+                       "Move at your own shortlist speed"],
+           "stat": "100+", "stat_label": "live deals across 15 industries"},
+          {"icon": _ic("chip"), "kicker": "Self-serve platform",
+           "name": "Max Data",
+           "line": "Your own research desk for the Thai market.",
+           "bullets": ["Research, source, and track targets on your own",
+                       "Local intelligence and decision-maker reach built in"],
+           "stat": "1.99M", "stat_label": "companies, 10 years of financials"},
+      ],
+      band_text="Whichever lane fits, schedule a call. The first five "
+                "bookings get a customized session: your industry, your "
+                "goal, and exactly how we'd research and source for you.",
+      band_chip="First 5 bookings",
+      source="Max Solutions, July 2026")
+
 b.add("cta_slide", **S("6 · Next step"),
       title="Do one of these before you log off",
       paths=[
@@ -921,11 +951,12 @@ NOTES = {
     43: "Callback to the demo: 'your edge is seeing what others cannot.' [T+1:06]",
     44: "Section 6 · YOUR NEXT STEP. Budget 6 minutes. [T+1:08]",
     45: "Three take-homes. Second screenshot moment.",
-    46: "THE ask. Type 1 (buy) / 2 (sell) / 3 (refer), scan QR, or add LINE. Say it twice. QR stays up through Q&A. [T+1:10]",
-    47: "About 20 minutes. Seed questions ready: 'what multiples do Thai SMEs sell for?', 'can foreigners buy?', 'how long does a deal take?'",
-    48: "Personal beat. Read the groups briskly and warmly, then slow right down for the last line. Look at the camera for Pim's line.",
-    49: "Mention the replay and community link land in tomorrow's follow-up email.",
-    50: "Appendix: replay material. Skip live unless Q&A pulls them up.",
+    46: "Lanes slide: sweep once left to right, 'from us doing everything to you running it all yourself.' Then the hook, unhurried: 'first five bookings get a customized session.' [T+1:03]",
+    47: "THE ask. Type 1 (buy) / 2 (sell) / 3 (refer), scan QR, or add LINE. Say it twice. QR stays up through Q&A. [T+1:10]",
+    48: "About 20 minutes. Seed questions ready: 'what multiples do Thai SMEs sell for?', 'can foreigners buy?', 'how long does a deal take?'",
+    49: "Personal beat. Read the groups briskly and warmly, then slow right down for the last line. Look at the camera for Pim's line.",
+    50: "Mention the replay and community link land in tomorrow's follow-up email.",
+    51: "Appendix: replay material. Skip live unless Q&A pulls them up.",
 }
 
 for _i, _slide in enumerate(b.prs.slides, 1):
