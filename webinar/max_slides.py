@@ -813,6 +813,193 @@ def add_scorecard_slide(prs, *,
     return slide
 
 
+# ---------- feature pick (hero panel + runners) ----------
+
+def add_feature_pick(prs, *,
+                     title: str,
+                     hero: dict,
+                     runners: Sequence[dict],
+                     caveat: Optional[str] = None,
+                     page_number=None, section_marker=None,
+                     source=None, footnote=None,
+                     theme: Theme = MAX_THEME):
+    """Left: one hero pick on a navy panel with big numbers. Right: ranked
+    runner rows. hero: {name, headline, stats:[{value,label}], line}
+    runners: [{name, stat, note}]"""
+    slide = blank_slide(prs)
+    add_chrome(slide, title=title, theme=theme, page_number=page_number,
+               section_marker=section_marker, source=source, footnote=footnote)
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+
+    top = 1.65
+    panel_w = 5.4
+    panel_h = layout.footer_top_in - top - 0.25
+    add_rect(slide, layout.margin_left_in, top, panel_w, panel_h,
+             fill=pal.deep_navy)
+    add_rect(slide, layout.margin_left_in, top, panel_w, 0.14,
+             fill=pal.bright_blue)
+    tb = add_textbox(slide, layout.margin_left_in + 0.35, top + 0.35,
+                     panel_w - 0.7, 0.35)
+    write_paragraph(tb.text_frame, "OUR PICK", size=typo.small_size, bold=True,
+                    color=pal.bright_blue, family=typo.family, first=True)
+    tb = add_textbox(slide, layout.margin_left_in + 0.35, top + 0.70,
+                     panel_w - 0.7, 0.55)
+    write_paragraph(tb.text_frame, hero["name"], size=typo.title_size,
+                    bold=True, color=pal.white, family=typo.family, first=True)
+    enable_text_shrink(tb.text_frame)
+    tb = add_textbox(slide, layout.margin_left_in + 0.35, top + 1.30,
+                     panel_w - 0.7, 0.42)
+    write_paragraph(tb.text_frame, hero["headline"], size=typo.body_size + 1,
+                    color=pal.light_blue, family=typo.family, first=True)
+    enable_text_shrink(tb.text_frame)
+    # Stat tiles inside the panel
+    stats = hero.get("stats", [])
+    if stats:
+        tile_w = (panel_w - 0.7 - 0.2 * (len(stats) - 1)) / len(stats)
+        for i, st in enumerate(stats):
+            tl = layout.margin_left_in + 0.35 + i * (tile_w + 0.2)
+            tt = top + 1.95
+            tb = add_textbox(slide, tl, tt, tile_w, 0.55)
+            write_paragraph(tb.text_frame, st["value"],
+                            size=typo.title_size - 2, bold=True,
+                            color=pal.bright_blue, family=typo.family,
+                            first=True)
+            enable_text_shrink(tb.text_frame)
+            tb = add_textbox(slide, tl, tt + 0.55, tile_w, 0.55)
+            write_paragraph(tb.text_frame, st["label"], size=typo.small_size,
+                            color=pal.white, family=typo.family, first=True)
+            enable_text_shrink(tb.text_frame)
+    if hero.get("line"):
+        add_line(slide, layout.margin_left_in + 0.35, top + panel_h - 1.05,
+                 layout.margin_left_in + panel_w - 0.35, top + panel_h - 1.05,
+                 color=pal.mid_blue, width_pt=0.75)
+        tb = add_textbox(slide, layout.margin_left_in + 0.35,
+                         top + panel_h - 0.90, panel_w - 0.7, 0.75)
+        write_paragraph(tb.text_frame, hero["line"], size=typo.body_size,
+                        color=pal.white, family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
+
+    # Runner rows on the right
+    rleft = layout.margin_left_in + panel_w + 0.45
+    rwidth = layout.slide_width_in - layout.margin_right_in - rleft
+    row_h = 1.05
+    ry = top + 0.10
+    for i, r in enumerate(runners):
+        add_line(slide, rleft, ry + row_h, rleft + rwidth, ry + row_h,
+                 color=pal.grid_gray, width_pt=0.5)
+        tb = add_textbox(slide, rleft, ry + 0.06, rwidth - 1.9, 0.38)
+        write_paragraph(tb.text_frame, r["name"], size=typo.body_size + 1,
+                        bold=True, color=pal.dark_navy, family=typo.family,
+                        first=True)
+        enable_text_shrink(tb.text_frame)
+        tb = add_textbox(slide, rleft, ry + 0.46, rwidth - 1.9, 0.52)
+        write_paragraph(tb.text_frame, r["note"], size=typo.body_size - 1,
+                        color=pal.text_dark, family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
+        tb = add_textbox(slide, rleft + rwidth - 1.8, ry + 0.10, 1.8, 0.8,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, r["stat"], size=typo.title_size - 4,
+                        bold=True, color=pal.bright_blue, family=typo.family,
+                        align=PP_ALIGN.RIGHT, first=True)
+        enable_text_shrink(tb.text_frame)
+        ry += row_h + 0.12
+    if caveat:
+        tb = add_textbox(slide, rleft, ry + 0.05, rwidth, 0.6)
+        write_paragraph(tb.text_frame, caveat, size=typo.small_size,
+                        italic=True, color=pal.footer_gray,
+                        family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
+    return slide
+
+
+# ---------- succession profile cards ----------
+
+def add_profile_cards(prs, *,
+                      title: str,
+                      headline_stat: str,
+                      headline_label: str,
+                      section_chips: Sequence[dict],
+                      profiles: Sequence[dict],
+                      disclaimer: str,
+                      page_number=None, section_marker=None,
+                      source=None, footnote=None,
+                      theme: Theme = MAX_THEME):
+    """Headline count band + per-section chips + 3 anonymized company profile
+    cards styled like Max Data records. profiles: {sector, province, facts:[...]}"""
+    slide = blank_slide(prs)
+    add_chrome(slide, title=title, theme=theme, page_number=page_number,
+               section_marker=section_marker, source=source, footnote=footnote)
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+    total_w = (layout.slide_width_in - layout.margin_left_in
+               - layout.margin_right_in)
+
+    # Headline band: big count + label + section chips
+    top = 1.60
+    band_h = 1.05
+    add_rect(slide, layout.margin_left_in, top, total_w, band_h,
+             fill=pal.deep_navy)
+    tb = add_textbox(slide, layout.margin_left_in + 0.35, top, 2.9, band_h,
+                     anchor=MSO_ANCHOR.MIDDLE)
+    write_paragraph(tb.text_frame, headline_stat, size=typo.title_size + 10,
+                    bold=True, color=pal.bright_blue, family=typo.family,
+                    first=True)
+    tb = add_textbox(slide, layout.margin_left_in + 3.35, top + 0.12, 3.55,
+                     band_h - 0.24, anchor=MSO_ANCHOR.MIDDLE)
+    write_paragraph(tb.text_frame, headline_label, size=typo.body_size + 1,
+                    color=pal.white, family=typo.family, first=True)
+    enable_text_shrink(tb.text_frame)
+    chip_w = 1.18
+    cx = layout.slide_width_in - layout.margin_right_in - 0.2 \
+        - chip_w * len(section_chips) - 0.12 * (len(section_chips) - 1)
+    for i, ch in enumerate(section_chips):
+        left = cx + i * (chip_w + 0.12)
+        add_rect(slide, left, top + 0.18, chip_w, band_h - 0.36,
+                 fill=pal.mid_blue)
+        tb = add_textbox(slide, left, top + 0.22, chip_w, 0.34)
+        write_paragraph(tb.text_frame, ch["value"], size=typo.body_size + 1,
+                        bold=True, color=pal.white, family=typo.family,
+                        align=PP_ALIGN.CENTER, first=True)
+        tb = add_textbox(slide, left, top + 0.56, chip_w, 0.30)
+        write_paragraph(tb.text_frame, ch["label"], size=7.5,
+                        color=pal.light_blue, family=typo.family,
+                        align=PP_ALIGN.CENTER, first=True)
+
+    # Profile cards
+    n = len(profiles)
+    gap = 0.4
+    card_w = (total_w - gap * (n - 1)) / n
+    ctop = top + band_h + 0.30
+    card_h = layout.footer_top_in - ctop - 0.55
+    for i, p in enumerate(profiles):
+        left = layout.margin_left_in + i * (card_w + gap)
+        add_rect(slide, left, ctop, card_w, card_h, fill=pal.soft_gray)
+        add_rect(slide, left, ctop, card_w, 0.50, fill=pal.dark_navy)
+        tb = add_textbox(slide, left + 0.2, ctop, card_w - 0.4, 0.50,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, p["sector"], size=typo.body_size,
+                        bold=True, color=pal.white, family=typo.family,
+                        first=True)
+        enable_text_shrink(tb.text_frame)
+        tb = add_textbox(slide, left + 0.25, ctop + 0.62, card_w - 0.5, 0.30)
+        write_paragraph(tb.text_frame, p["province"], size=typo.small_size,
+                        bold=True, color=pal.bright_blue, family=typo.family,
+                        first=True)
+        tb = add_textbox(slide, left + 0.25, ctop + 0.95, card_w - 0.5,
+                         card_h - 1.10)
+        for j, f in enumerate(p["facts"]):
+            write_paragraph(tb.text_frame, f, size=typo.body_size - 1,
+                            color=pal.text_dark, family=typo.family,
+                            bullet=True, first=(j == 0), space_after=5)
+        enable_text_shrink(tb.text_frame)
+
+    tb = add_textbox(slide, layout.margin_left_in,
+                     layout.footer_top_in - 0.42, total_w, 0.30)
+    write_paragraph(tb.text_frame, disclaimer, size=typo.small_size,
+                    italic=True, color=pal.footer_gray, family=typo.family,
+                    first=True)
+    return slide
+
+
 # ---------- register everything ----------
 
 _REGISTRY.update({
@@ -827,4 +1014,6 @@ _REGISTRY.update({
     "three_cards": add_three_cards,
     "recap_cards": add_recap_cards,
     "scorecard_slide": add_scorecard_slide,
+    "feature_pick": add_feature_pick,
+    "profile_cards": add_profile_cards,
 })

@@ -66,24 +66,28 @@ def _draw_xy_axis(slide, theme, *, plot_box, x_max, y_max,
                         size=typo.chart_axis_size, color=pal.text_dark,
                         family=typo.family, align=PP_ALIGN.CENTER, first=True)
 
-    # Axis titles
-    tb = add_textbox(slide, pl - 0.6, pt - 0.45, 3.5, 0.3)
+    # Axis titles. Brackets mark unfilled template defaults only — real labels
+    # render clean.
+    def _fmt(label, default):
+        return f"[{label}]" if label == default else label
+
+    tb = add_textbox(slide, pl - 0.6, pt - 0.45, 4.5, 0.3)
     p = tb.text_frame.paragraphs[0]
-    r = p.add_run(); r.text = f"[{y_label}], "
+    r = p.add_run(); r.text = f"{_fmt(y_label, 'Dimension 1')}, "
     r.font.size = Pt(typo.section_title_size); r.font.bold = True
     r.font.color.rgb = pal.text_dark; r.font.name = typo.family
-    r2 = p.add_run(); r2.text = f"[{y_unit}]"
+    r2 = p.add_run(); r2.text = _fmt(y_unit, 'Unit')
     r2.font.size = Pt(typo.section_title_size)
     r2.font.color.rgb = pal.placeholder_gray; r2.font.name = typo.family
 
-    tb = add_textbox(slide, pr - 2.5, pb + 0.30, 2.5, 0.3)
+    tb = add_textbox(slide, pr - 3.6, pb + 0.32, 3.6, 0.3)
     p = tb.text_frame.paragraphs[0]
     p.alignment = PP_ALIGN.RIGHT
-    r = p.add_run(); r.text = f"[{x_label}], "
-    r.font.size = Pt(typo.section_title_size); r.font.bold = True
+    r = p.add_run(); r.text = f"{_fmt(x_label, 'Dimension 2')}, "
+    r.font.size = Pt(typo.small_size + 1); r.font.bold = True
     r.font.color.rgb = pal.text_dark; r.font.name = typo.family
-    r2 = p.add_run(); r2.text = f"[{x_unit}]"
-    r2.font.size = Pt(typo.section_title_size)
+    r2 = p.add_run(); r2.text = _fmt(x_unit, 'Unit')
+    r2.font.size = Pt(typo.small_size + 1)
     r2.font.color.rgb = pal.placeholder_gray; r2.font.name = typo.family
 
 
@@ -137,7 +141,8 @@ def _draw_bubble(slide, theme, *, plot_box, x_max, y_max, bubble,
                             align=align, first=True)
 
 
-def _draw_legend_groups(slide, theme, *, top_left, groups, with_size_swatch=True):
+def _draw_legend_groups(slide, theme, *, top_left, groups, with_size_swatch=True,
+                        size_label=None):
     """groups: [(color_name, label)]"""
     pal, typo = theme.palette, theme.typography
     color_map = {
@@ -153,16 +158,19 @@ def _draw_legend_groups(slide, theme, *, top_left, groups, with_size_swatch=True
         add_oval(slide, x, y - 0.05, d, d, fill=rgb)
         tb = add_textbox(slide, x + d + 0.08, y - 0.06, 1.5, 0.30,
                          anchor=MSO_ANCHOR.MIDDLE)
-        write_paragraph(tb.text_frame, f"[{label}]", size=typo.chart_label_size,
+        label_text = f"[{label}]" if label.startswith("Insert") else label
+        write_paragraph(tb.text_frame, label_text, size=typo.chart_label_size,
                         color=pal.text_dark, family=typo.family, first=True)
         x += d + 1.5
     if with_size_swatch:
         d = 0.28
         add_oval(slide, x, y - 0.05, d, d, fill=None,
                  line=pal.placeholder_gray, line_width=0.75)
-        tb = add_textbox(slide, x + d + 0.08, y - 0.06, 2.4, 0.30,
+        tb = add_textbox(slide, x + d + 0.08, y - 0.06, 2.9, 0.30,
                          anchor=MSO_ANCHOR.MIDDLE)
-        write_paragraph(tb.text_frame, "Size = [Insert dimension]",
+        size_text = (f"Size = {size_label}" if size_label
+                     else "Size = [Insert dimension]")
+        write_paragraph(tb.text_frame, size_text,
                         size=typo.chart_label_size, color=pal.text_dark,
                         family=typo.family, first=True)
 
@@ -237,6 +245,7 @@ def add_bubble_chart_with_takeaways(prs, *,
                                     takeaways=(),
                                     description: str = "Description",
                                     takeaway_header: str = "Key takeaways/main conclusion",
+                                    size_label=None,
                                     page_number=None, section_marker=None,
                                     source="xx", footnote=None,
                                     theme: Theme = DEFAULT_THEME):
@@ -256,7 +265,8 @@ def add_bubble_chart_with_takeaways(prs, *,
     _draw_bubble(slide, theme, plot_box=plot_box, x_max=x_max, y_max=y_max,
                  bubble=bubbles)
     # Legend below chart (kept clear of axis title)
-    _draw_legend_groups(slide, theme, top_left=(1.05, 6.55), groups=groups)
+    _draw_legend_groups(slide, theme, top_left=(1.05, 6.55), groups=groups,
+                        size_label=size_label)
     # Takeaway right side
     _draw_takeaway(slide, theme, takeaways=takeaways,
                    header=takeaway_header,
