@@ -200,11 +200,16 @@ def _draw_axis_and_bars(slide, theme, *, chart_box, data_label,
             fill = pal.dark_navy
         add_rect(slide, bar_left, bar_top, bar_w, bar_h, fill=fill)
 
-        # Value label above the bar
+        # Value label above the bar. Small non-integer values keep one decimal
+        # so e.g. 7.9 doesn't display as a misleading 8.
+        if abs(val) < 10 and float(val) != int(val):
+            val_text = f"{val:.1f}"
+        else:
+            val_text = f"{int(round(val))}"
         tb = add_textbox(slide, bar_left - 0.2, bar_top - 0.30,
                          bar_w + 0.4, 0.25,
                          anchor=MSO_ANCHOR.BOTTOM)
-        write_paragraph(tb.text_frame, f"{int(round(val))}",
+        write_paragraph(tb.text_frame, val_text,
                         size=typo.chart_label_size, color=pal.text_dark,
                         family=typo.family, align=PP_ALIGN.CENTER, first=True)
 
