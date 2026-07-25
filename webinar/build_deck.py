@@ -17,6 +17,24 @@ import editorial_slides  # noqa: F401  (registers editorial templates)
 
 SRC_MAXDATA = "Max Data registry analysis, July 2026 (1.99M Thai juristic persons, 9.8M financial statements)"
 
+import os
+from pptx.util import Inches
+
+GEN = "/home/user/mckinsey-pptx/webinar/assets/gen"
+
+
+def _ic(name):
+    """Icon path (transparent PNG); slides skip icons that don't exist yet."""
+    return f"{GEN}/icons/{name}.png"
+
+
+def _pic(slide, path, x, y, w, h):
+    """Post-hoc cover-cropped vignette; silently skipped if asset missing."""
+    if os.path.exists(path):
+        crop = editorial_slides.cover_crop(path, w, h)
+        slide.shapes.add_picture(crop, Inches(x), Inches(y),
+                                 width=Inches(w), height=Inches(h))
+
 b = PresentationBuilder(theme=MAX_THEME)
 
 # Engine templates default footnote to a "1. xx" placeholder; this deck never
@@ -67,7 +85,8 @@ b.add("poll_slide", **S("Welcome"),
                "Owner thinking about an exit or succession",
                "Advisor, banker, or connector",
                "Exploring M&A for the first time"],
-      instruction="Vote now in the poll panel")
+      instruction="Vote now in the poll panel",
+      ornament_path=f"{GEN}/backdrops/poll-corner.png")
 
 b.add("route_map", **S("Agenda"),
       title="Tonight's map: six stops",
@@ -98,7 +117,8 @@ b.add("speaker_panels", **S("Welcome"),
 # SECTION 1 · WHY NOW
 # =====================================================================
 
-b.add("section_divider", section_number="01",
+b.add("art_divider", art_path=f"{GEN}/dividers/div-1.png",
+      section_number="01",
       section_title="Why Thailand, why now",
       subtitle="The market has re-sorted since COVID, and a generational handover is starting")
 
@@ -150,16 +170,16 @@ b.add("sector_matrix", **S("1 · Why now"),
       title="The reshuffle in the four sectors this room plays in",
       subtitle="Operating counts, recovery growth, and margin swings, straight from the registry",
       rows=[
-          {"name": "Logistics", "count": "44,190",
+          {"name": "Logistics", "icon": _ic("truck"), "count": "44,190",
            "note": "9,399 mid-market targets ฿10M-1B",
            "growth": 66, "margin_from": "-14%", "margin_to": "+7.5%"},
-          {"name": "Manufacturing", "count": "109,063",
+          {"name": "Manufacturing", "icon": _ic("factory"), "count": "109,063",
            "note": "฿21.1T revenue, Thailand's largest",
            "growth": 30, "margin_from": "4.3%", "margin_to": "4.3% steady"},
-          {"name": "F&B & hospitality", "count": "48,564",
+          {"name": "F&B & hospitality", "icon": _ic("food"), "count": "48,564",
            "note": "The steepest recovery arc",
            "growth": 141, "margin_from": "-22%", "margin_to": "+7.4%"},
-          {"name": "Tech & information", "count": "29,027",
+          {"name": "Tech & information", "icon": _ic("chip"), "count": "29,027",
            "note": "Growth in profit, not just sales",
            "growth": 18, "margin_from": "5.9%", "margin_to": "7.5%"},
       ],
@@ -204,6 +224,7 @@ b.add("feature_pick", **S("1 · Why now"),
                     {"value": "10.3%", "label": "net margin FY2025"},
                     {"value": "฿80B", "label": "FY2025 revenue, 258 companies"}],
           "line": "Margins held at 7% or better in every one of the last six years",
+          "icon": _ic("food"),
       },
       runners=[
           {"name": "Cafés & beverage stands",
@@ -220,9 +241,10 @@ b.add("feature_pick", **S("1 · Why now"),
              "growth leaders in manufacturing fail that test and are excluded.",
       source=SRC_MAXDATA)
 
-b.add("fork_road", **S("1 · Why now"),
+_sl_fork = b.add("fork_road", **S("1 · Why now"),
       title="Two roads to growth, and only one of them is fast",
       source="Max Solutions M&A advisory practice")
+_pic(_sl_fork, f"{GEN}/scenes/family-shop.png", 9.15, 4.32, 3.45, 1.38)
 
 b.add("dimension_table", **S("1 · Why now"),
       title="M&A used to be a big-company game. Not anymore",
@@ -256,6 +278,7 @@ b.add("column_comparison", **S("1 · Why now"),
       source="KPMG Thailand M&A Trends quarterlies 2025-Q1 2026; ASEAN: Lyndon Advisory")
 
 b.add("stat_hero_navy", **S("1 · Why now"),
+      bg_path=f"{GEN}/backdrops/hero-waffle-glow.png",
       title_eyebrow="The succession wave is the supply side of this market",
       stat="81%",
       stat_label="of Thailand's 20-year-plus companies have no next-generation director on the board",
@@ -292,13 +315,15 @@ b.add("quote_breather", **S("1 · Why now"),
       author="[Max · full name]",
       author_title="Founder, Max Solutions · placeholder quote, edit to taste",
       photo_label="Photo: Max",
+      photo_path=f"{GEN}/scenes/quote-founder.png",
       source="Max Solutions")
 
 # =====================================================================
 # SECTION 2 · WHAT GOOD LOOKS LIKE
 # =====================================================================
 
-b.add("section_divider", section_number="02",
+b.add("art_divider", art_path=f"{GEN}/dividers/div-2.png",
+      section_number="02",
       section_title="What a good target looks like",
       subtitle="The lens our deal team applies before we ever talk price")
 
@@ -309,7 +334,8 @@ b.add("poll_slide", **S("2 · The lens"),
                "The owner and why they are selling",
                "The customers and recurring revenue",
                "The competition around it"],
-      instruction="Vote now. We'll show you our order in a minute")
+      instruction="Vote now. We'll show you our order in a minute",
+      ornament_path=f"{GEN}/backdrops/poll-corner.png")
 
 b.add("chevron_flags", **S("2 · The lens"),
       title="The Green 5: what our analysts look for in every target",
@@ -390,7 +416,8 @@ b.add("scorecard_slide", **S("2 · The lens"),
 # SECTION 3 · WHERE DEALS COME FROM
 # =====================================================================
 
-b.add("section_divider", section_number="03",
+b.add("art_divider", art_path=f"{GEN}/dividers/div-3.png",
+      section_number="03",
       section_title="Where deals actually come from",
       subtitle="From two million registered companies to the handful worth your time")
 
@@ -430,13 +457,13 @@ b.add("ceilings", **S("3 · The access"),
 b.add("access_ladder", **S("3 · The access"),
       title="Our answer: three doors, one ecosystem",
       steps=[
-          {"kicker": "Door 1 · Community", "stat": "80,000+ members",
+          {"kicker": "Door 1 · Community", "icon": _ic("door"), "stat": "80,000+ members",
            "bullets": ["DealFlow Facebook community",
                        "Off-market chatter surfaces here first"]},
-          {"kicker": "Door 2 · Marketplace", "stat": "100+ live deals",
+          {"kicker": "Door 2 · Marketplace", "icon": _ic("door"), "stat": "100+ live deals",
            "bullets": ["DealFlow Market listings",
                        "Screened sellers, 15 industries"]},
-          {"kicker": "Door 3 · Advisory", "stat": "150+ SMEs/yr",
+          {"kicker": "Door 3 · Advisory", "icon": _ic("door"), "stat": "150+ SMEs/yr",
            "bullets": ["Full-mandate M&A advisory",
                        "Our deal team runs it end to end"]},
       ],
@@ -472,15 +499,15 @@ b.add("screenshot_slide", **S("3 · The access"),
 b.add("metro_line", **S("3 · The access"),
       title="Max Data: our AI analytics platform, built for every stage",
       stops=[
-          {"name": "Research",
+          {"name": "Research", "icon": _ic("chip"),
            "description": "Market and industry trends"},
-          {"name": "Source",
+          {"name": "Source", "icon": _ic("target"),
            "description": "Filter to targets that fit your thesis"},
-          {"name": "Validate",
+          {"name": "Validate", "icon": _ic("book"),
            "description": "10 years of financials on any company"},
-          {"name": "Diligence",
+          {"name": "Diligence", "icon": _ic("magnifier"),
            "description": "Directors, licences, branches, contracts"},
-          {"name": "Reach",
+          {"name": "Reach", "icon": _ic("handshake"),
            "description": "Contact the actual decision maker"},
       ],
       input_note="1.99M companies in",
@@ -507,7 +534,8 @@ b.add("screenshot_slide", **S("3 · The access"),
 # SECTION 4 · HOW A DEAL RUNS
 # =====================================================================
 
-b.add("section_divider", section_number="04",
+b.add("art_divider", art_path=f"{GEN}/dividers/div-4.png",
+      section_number="04",
       section_title="How a deal actually runs",
       subtitle="The buy-side path in six steps, and the seller's mirror image")
 
@@ -552,7 +580,8 @@ b.add("mirror_spine", **S("4 · The path"),
 # SECTION 5 · PROOF
 # =====================================================================
 
-b.add("section_divider", section_number="05",
+b.add("art_divider", art_path=f"{GEN}/dividers/div-5.png",
+      section_number="05",
       section_title="Proof it works",
       subtitle="Two deals our team closed this year, and the global wave behind them")
 
@@ -563,7 +592,8 @@ b.add("poll_slide", **S("5 · Proof"),
                "My company should be acquiring",
                "I own a business that needs a successor",
                "I connect people and want the referral fee"],
-      instruction="Vote now. The cases coming up cover all four")
+      instruction="Vote now. The cases coming up cover all four",
+      ornament_path=f"{GEN}/backdrops/poll-corner.png")
 
 b.add("profile_cards", **S("5 · Proof"),
       title="The supply is real: companies like these are in the registry right now",
@@ -625,6 +655,7 @@ b.add("case_slide", **S("5 · Proof"),
             {"value": "฿30M", "label": "EBITDA at deal"},
             {"value": "112", "label": "fire-safety companies tracked"}],
       photo_label=None,
+      photo_path=f"{GEN}/scenes/case-fire.png",
       source="Max Solutions deal team, 2026. Figures approximate to protect the parties")
 
 b.add("case_slide", **S("5 · Proof"),
@@ -640,9 +671,10 @@ b.add("case_slide", **S("5 · Proof"),
       bridge_stat="2x turnover trajectory",
       kpis=[{"value": "Top 3", "label": "Google rank in its niche"},
             {"value": "94", "label": "kitchen-equipment suppliers tracked"}],
+      photo_path=f"{GEN}/scenes/case-oven.png",
       source="Max Solutions deal team, 2026. Figures approximate to protect the parties")
 
-b.add("causality_band", **S("5 · Proof"),
+_sl_caus = b.add("causality_band", **S("5 · Proof"),
       title="Why small deals turn around so fast",
       subtitle="The pattern behind both cases, and most of our closed deals",
       blocks=[
@@ -655,6 +687,7 @@ b.add("causality_band", **S("5 · Proof"),
       ],
       result="Margins move in months, not years. SME payback: 3-8 years vs 10+ on mega-deals",
       source="Max Solutions deal experience across 150+ SME mandates per year")
+_pic(_sl_caus, f"{GEN}/scenes/succession.png", 4.97, 4.85, 3.4, 1.35)
 
 b.add("dimension_table", **S("5 · Proof"),
       title="Sourcing then vs now: what the data layer changes",
@@ -680,18 +713,19 @@ b.add("dimension_table", **S("5 · Proof"),
 # SECTION 6 · ACT
 # =====================================================================
 
-b.add("section_divider", section_number="06",
+b.add("art_divider", art_path=f"{GEN}/dividers/div-6.png",
+      section_number="06",
       section_title="Your next step",
       subtitle="Three frameworks to keep, one action to take tonight")
 
 b.add("recap_cards", **S("6 · Next step"),
       title="What you now have",
       cards=[
-          {"takeaway": "A reason to move now",
+          {"takeaway": "A reason to move now", "icon": _ic("flag"),
            "line": "The succession wave is bringing good companies to market"},
-          {"takeaway": "A lens to judge any deal",
+          {"takeaway": "A lens to judge any deal", "icon": _ic("magnifier"),
            "line": "The Green 5, the Red 3, and the 60-second scorecard"},
-          {"takeaway": "A way in",
+          {"takeaway": "A way in", "icon": _ic("door"),
            "line": "Three doors, the Max Data layer, and the 6-step path"},
       ],
       conclusion="The buyers who win the succession wave start looking before everyone else.")
@@ -699,11 +733,11 @@ b.add("recap_cards", **S("6 · Next step"),
 b.add("cta_slide", **S("6 · Next step"),
       title="Do one of these before you log off",
       paths=[
-          {"num": 1, "who": "Buyers & investors", "action": "Book a free opportunity scan",
+          {"num": 1, "icon": _ic("target"), "who": "Buyers & investors", "action": "Book a free opportunity scan",
            "detail": "We map live targets against your thesis, in a session your board can act on."},
-          {"num": 2, "who": "Owners", "action": "Get a confidential valuation talk",
+          {"num": 2, "icon": _ic("book"), "who": "Owners", "action": "Get a confidential valuation talk",
            "detail": "Know what your business is worth and what buyers would flag, no obligation."},
-          {"num": 3, "who": "Connectors & everyone", "action": "Join the DealFlow community",
+          {"num": 3, "icon": _ic("people"), "who": "Connectors & everyone", "action": "Join the DealFlow community",
            "detail": "80,000+ members. Refer a buyer or seller and our referral program pays you."},
       ],
       bottom_actions=["Type 1 (buying), 2 (selling), or 3 (referring) in the chat, and our team follows up tomorrow",
@@ -711,6 +745,7 @@ b.add("cta_slide", **S("6 · Next step"),
       qr_label="QR: booking page")
 
 b.add("qa_slide",
+      bg_path=f"{GEN}/backdrops/qa-waves.png",
       line="Ask us anything. We stay until your questions run out.",
       qr_caption="Scan to book · or type 1 / 2 / 3 in the chat")
 
@@ -719,14 +754,16 @@ b.add("credits_slide",
           {"to": "To everyone here tonight",
            "line": "Thank you for spending your Sunday evening with us."},
           {"to": "To the Max Solutions team",
-           "line": "The moderator, our events crew, Khun Aoy, and Khun Vipin, "
-                   "who built tonight behind the scenes."},
+           "line": "The moderator, our events crew, Khun Aoy for the client "
+                   "insights, and Khun Vipin for the deal expertise behind "
+                   "every framework tonight."},
       ],
       finale="And to my partner Pim, who inspired this, helped build every "
              "part of it, and has carried me through the whole journey.",
       finale_name="Thank you, Pim")
 
 b.add("thank_you",
+      bg_path=f"{GEN}/backdrops/thanks-skyline.png",
       lines=["Max Solutions · DealFlow Market · Max Data",
              "See you in the deal flow"],
       contact_placeholder="QR + contacts: LINE, email, phone")
@@ -735,7 +772,8 @@ b.add("thank_you",
 # APPENDIX
 # =====================================================================
 
-b.add("section_divider", section_number="A",
+b.add("art_divider", art_path=f"{GEN}/dividers/div-A.png",
+      section_number="A",
       section_title="Appendix",
       subtitle="For the replay: process detail, glossary, and methodology")
 

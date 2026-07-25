@@ -15,6 +15,7 @@ ships looking accidentally empty.
 """
 from __future__ import annotations
 from typing import Optional, Sequence
+import os
 
 from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.dml import MSO_LINE_DASH_STYLE
@@ -199,6 +200,7 @@ def add_poll_slide(prs, *,
                    question: str,
                    options: Sequence[str],
                    instruction: str = "Answer in the poll panel now",
+                   ornament_path: Optional[str] = None,
                    page_number=None, section_marker=None,
                    source=None, footnote=None,
                    theme: Theme = MAX_THEME):
@@ -209,6 +211,9 @@ def add_poll_slide(prs, *,
     add_rect(slide, 0, 0, layout.slide_width_in, layout.slide_height_in,
              fill=rgb("022859"))
 
+    if ornament_path and os.path.exists(ornament_path):
+        slide.shapes.add_picture(ornament_path, Inches(9.55), Inches(2.95),
+                                 width=Inches(3.78), height=Inches(3.78))
     chip_w = 1.55
     add_rect(slide, layout.margin_left_in, 0.55, chip_w, 0.40,
              fill=pal.bright_blue)
@@ -441,6 +446,7 @@ def add_case_slide(prs, *,
                    kpis: Sequence[dict],
                    bridge_stat: Optional[str] = None,
                    photo_label: Optional[str] = None,
+                   photo_path: Optional[str] = None,
                    page_number=None, section_marker=None,
                    source=None, footnote=None,
                    theme: Theme = MAX_THEME):
@@ -511,6 +517,16 @@ def add_case_slide(prs, *,
                         align=PP_ALIGN.CENTER, first=True)
         enable_text_shrink(tb.text_frame)
 
+    # Scene vignette in the centre gap, below the chevron bridge
+    if photo_path and os.path.exists(photo_path):
+        from editorial_slides import cover_crop
+        gap_left = layout.margin_left_in + col_w
+        gap_w = right_left - gap_left
+        crop = cover_crop(photo_path, gap_w - 0.1, 0.85)
+        slide.shapes.add_picture(crop, Inches(gap_left + 0.05), Inches(4.30),
+                                 width=Inches(gap_w - 0.1),
+                                 height=Inches(0.85))
+
     # Open stat band at the bottom, hairline separated
     kpi_top = col_top + col_h + 0.30
     n = max(len(kpis), 1)
@@ -567,6 +583,11 @@ def add_access_ladder(prs, *,
         top = base_y - h
         add_rect(slide, left, top, col_w, h, fill=fills[i])
         corners.append((left, top))
+        if st.get("icon") and os.path.exists(st["icon"]):
+            slide.shapes.add_picture(st["icon"],
+                                     Inches(left + col_w - 0.75),
+                                     Inches(top + 0.16), width=Inches(0.5),
+                                     height=Inches(0.5))
         tb = add_textbox(slide, left + 0.28, top + 0.20, col_w - 0.56, 0.28)
         write_paragraph(tb.text_frame, st["kicker"].upper(),
                         size=typo.small_size, bold=True,
@@ -644,6 +665,12 @@ def add_cta_slide(prs, *,
         write_paragraph(tb.text_frame, p["detail"], size=typo.body_size - 1,
                         color=pal.footer_gray, family=typo.family, first=True)
         enable_text_shrink(tb.text_frame)
+        if p.get("icon") and os.path.exists(p["icon"]):
+            d2 = 0.55
+            slide.shapes.add_picture(
+                p["icon"], Inches(layout.margin_left_in + rows_w - d2),
+                Inches(y + (row_h - d2) / 2), width=Inches(d2),
+                height=Inches(d2))
         if i < len(paths) - 1:
             add_line(slide, layout.margin_left_in, y + row_h + 0.07,
                      layout.margin_left_in + rows_w, y + row_h + 0.07,
@@ -681,6 +708,7 @@ def add_thank_you(prs, *,
                   headline: str = "Thank you",
                   lines: Sequence[str] = (),
                   contact_placeholder: Optional[str] = None,
+                  bg_path: Optional[str] = None,
                   page_number=None, section_marker=None,
                   source=None, footnote=None,
                   theme: Theme = MAX_THEME):
@@ -688,6 +716,14 @@ def add_thank_you(prs, *,
     pal, typo, layout = theme.palette, theme.typography, theme.layout
     add_rect(slide, 0, 0, layout.slide_width_in, layout.slide_height_in,
              fill=pal.deep_navy)
+
+    if bg_path and os.path.exists(bg_path):
+        from editorial_slides import cover_crop
+        crop = cover_crop(bg_path, layout.slide_width_in,
+                          layout.slide_height_in)
+        slide.shapes.add_picture(crop, Inches(0), Inches(0),
+                                 width=Inches(layout.slide_width_in),
+                                 height=Inches(layout.slide_height_in))
     add_logo(slide, LOGO_WHITE, layout.slide_width_in / 2 - 1.25, 1.0, 2.5)
 
     tb = add_textbox(slide, 1.5, 3.0, layout.slide_width_in - 3.0, 1.0)
@@ -837,6 +873,11 @@ def add_recap_cards(prs, *,
         left = layout.margin_left_in + i * (card_w + gap)
         add_rect(slide, left, top, card_w, card_h, fill=None,
                  line=pal.grid_gray, line_width=1.0)
+        if c.get("icon") and os.path.exists(c["icon"]):
+            slide.shapes.add_picture(c["icon"],
+                                     Inches(left + card_w - 0.78),
+                                     Inches(top + 0.18), width=Inches(0.55),
+                                     height=Inches(0.55))
         tb = add_textbox(slide, left + 0.22, top + 0.15, 0.9, 0.4)
         write_paragraph(tb.text_frame, f"0{i + 1}", size=typo.body_size + 4,
                         bold=True, color=pal.bright_blue, family=typo.family,
@@ -1019,6 +1060,12 @@ def add_feature_pick(prs, *,
             write_paragraph(tb.text_frame, st["label"], size=typo.small_size,
                             color=pal.white, family=typo.family, first=True)
             enable_text_shrink(tb.text_frame)
+    if hero.get("icon") and os.path.exists(hero["icon"]):
+        d3 = 0.85
+        slide.shapes.add_picture(
+            hero["icon"],
+            Inches(layout.margin_left_in + panel_w / 2 - d3 / 2),
+            Inches(top + panel_h - 2.05), width=Inches(d3), height=Inches(d3))
     if hero.get("line"):
         add_line(slide, layout.margin_left_in + 0.35, top + panel_h - 1.05,
                  layout.margin_left_in + panel_w - 0.35, top + panel_h - 1.05,

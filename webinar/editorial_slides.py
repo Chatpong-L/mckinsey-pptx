@@ -30,6 +30,34 @@ STEEL = rgb("55708C")      # muted steel for de-emphasized data
 SLATE = rgb("6B7B8C")      # decline bars
 PALE_ROW = rgb("F4F7FA")
 
+import os
+
+
+def cover_crop(path, w_in, h_in):
+    """Center-crop an image file to the w:h aspect of the target box and
+    cache the crop next to the original. Returns the cropped path."""
+    from PIL import Image
+    out = f"{os.path.splitext(path)[0]}.crop{w_in:g}x{h_in:g}.png"
+    if os.path.exists(out) and os.path.getmtime(out) >= os.path.getmtime(path):
+        return out
+    im = Image.open(path)
+    target = w_in / h_in
+    w, h = im.size
+    if w / h > target:
+        nw = int(h * target)
+        im = im.crop(((w - nw) // 2, 0, (w + nw) // 2, h))
+    else:
+        nh = int(w / target)
+        im = im.crop((0, (h - nh) // 2, w, (h + nh) // 2))
+    im.save(out)
+    return out
+
+
+def slide_icon(slide, path, x, y, size):
+    """Place a square icon PNG (transparent background) at x,y."""
+    return slide.shapes.add_picture(path, Inches(x), Inches(y),
+                                    width=Inches(size), height=Inches(size))
+
 
 # ---------- global flattening ----------
 
@@ -70,6 +98,58 @@ def divider_strip(slide, theme: Theme = MAX_THEME):
     """Low-contrast skyline strip along the bottom of a divider's navy panel."""
     slide.shapes.add_picture(STRIP_PANEL, Inches(0), Inches(6.9),
                              width=Inches(4.5), height=Inches(0.6))
+
+
+def add_art_divider(prs, *,
+                    section_number: str,
+                    section_title: str,
+                    subtitle: Optional[str] = None,
+                    art_path: Optional[str] = None,
+                    page_number=None, section_marker=None,
+                    source=None, footnote=None,
+                    theme: Theme = MAX_THEME):
+    """Section divider whose left panel is a themed art image (cover-art
+    sibling) with the big section number over it. Falls back to the flat
+    navy panel when art is missing."""
+    slide = blank_slide(prs)
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+    panel_w = 4.5
+    if art_path and os.path.exists(art_path):
+        crop = cover_crop(art_path, panel_w, layout.slide_height_in)
+        slide.shapes.add_picture(crop, Inches(0), Inches(0),
+                                 width=Inches(panel_w),
+                                 height=Inches(layout.slide_height_in))
+        # gentle navy scrim behind the number so it always reads
+        tb = add_textbox(slide, 0.5, layout.slide_height_in / 2 - 1.5,
+                         panel_w - 1.0, 2.0, anchor=MSO_ANCHOR.MIDDLE)
+    else:
+        add_rect(slide, 0, 0, panel_w, layout.slide_height_in,
+                 fill=pal.deep_navy)
+        divider_strip(slide, theme)
+        tb = add_textbox(slide, 0.5, layout.slide_height_in / 2 - 1.5,
+                         panel_w - 1.0, 2.0, anchor=MSO_ANCHOR.MIDDLE)
+    write_paragraph(tb.text_frame, str(section_number),
+                    size=typo.title_size + 56, bold=True,
+                    color=pal.bright_blue, family=typo.family,
+                    align=PP_ALIGN.CENTER, first=True)
+
+    right_left = panel_w + 0.6
+    right_w = layout.slide_width_in - right_left - layout.margin_right_in
+    tb = add_textbox(slide, right_left, layout.slide_height_in / 2 - 1.0,
+                     right_w, 1.4, anchor=MSO_ANCHOR.MIDDLE)
+    write_paragraph(tb.text_frame, section_title,
+                    size=typo.title_size + 8, bold=True,
+                    color=pal.text_dark, family=typo.family, first=True)
+    add_line(slide, right_left, layout.slide_height_in / 2 + 0.40,
+             right_left + 1.6, layout.slide_height_in / 2 + 0.40,
+             color=pal.bright_blue, width_pt=2.5)
+    if subtitle:
+        tb = add_textbox(slide, right_left,
+                         layout.slide_height_in / 2 + 0.55, right_w, 1.0)
+        write_paragraph(tb.text_frame, subtitle,
+                        size=typo.body_size + 2, color=pal.footer_gray,
+                        family=typo.family, first=True)
+    return slide
 
 
 def closing_strip(slide, theme: Theme = MAX_THEME, height=0.8):
@@ -345,8 +425,12 @@ def add_sector_matrix(prs, *,
     y = top + 0.45
     for i, r in enumerate(rows):
         cy = y + row_h / 2
-        tb = add_textbox(slide, c_name, cy - 0.30, 2.9, 0.60,
-                         anchor=MSO_ANCHOR.MIDDLE)
+        name_x = c_name
+        if r.get("icon") and os.path.exists(r["icon"]):
+            slide_icon(slide, r["icon"], c_name, cy - 0.27, 0.54)
+            name_x = c_name + 0.72
+        tb = add_textbox(slide, name_x, cy - 0.30, 2.9 - (name_x - c_name),
+                         0.60, anchor=MSO_ANCHOR.MIDDLE)
         write_paragraph(tb.text_frame, r["name"], size=typo.body_size + 3,
                         bold=True, color=pal.dark_navy, family=typo.family,
                         first=True)
@@ -588,6 +672,7 @@ def add_stat_hero_navy(prs, *,
                        waffle_filled: int = 81,
                        waffle_caption: str,
                        closing: str,
+                       bg_path: Optional[str] = None,
                        page_number=None, section_marker=None,
                        source=None, footnote=None,
                        theme: Theme = MAX_THEME):
@@ -595,6 +680,12 @@ def add_stat_hero_navy(prs, *,
     pal, typo, layout = theme.palette, theme.typography, theme.layout
     add_rect(slide, 0, 0, layout.slide_width_in, layout.slide_height_in,
              fill=rgb("022859"))
+    if bg_path and os.path.exists(bg_path):
+        crop = cover_crop(bg_path, layout.slide_width_in,
+                          layout.slide_height_in)
+        slide.shapes.add_picture(crop, Inches(0), Inches(0),
+                                 width=Inches(layout.slide_width_in),
+                                 height=Inches(layout.slide_height_in))
     tb = add_textbox(slide, layout.margin_left_in, 0.45, 10.0, 0.35)
     write_paragraph(tb.text_frame, title_eyebrow.upper(),
                     size=typo.body_size, bold=True, color=pal.light_blue,
@@ -739,6 +830,7 @@ def add_quote_breather(prs, *,
                        author: str,
                        author_title: str,
                        photo_label: Optional[str] = None,
+                       photo_path: Optional[str] = None,
                        page_number=None, section_marker=None,
                        source=None, footnote=None,
                        theme: Theme = MAX_THEME):
@@ -756,7 +848,12 @@ def add_quote_breather(prs, *,
     enable_text_shrink(tb.text_frame)
 
     ay = 4.75
-    if photo_label:
+    if photo_path and os.path.exists(photo_path):
+        crop = cover_crop(photo_path, 1.1, 1.1)
+        slide.shapes.add_picture(crop, Inches(2.4), Inches(ay - 0.15),
+                                 width=Inches(1.1), height=Inches(1.1))
+        ax = 3.75
+    elif photo_label:
         placeholder_box(slide, 2.4, ay - 0.15, 1.1, 1.1, photo_label,
                         theme=theme)
         ax = 3.75
@@ -1118,6 +1215,8 @@ def add_metro_line(prs, *,
     for i, st in enumerate(stops):
         cx = left0 + i * step
         last = (i == n - 1)
+        if st.get("icon") and os.path.exists(st["icon"]):
+            slide_icon(slide, st["icon"], cx - 0.30, y - 1.78, 0.60)
         add_oval(slide, cx - d / 2, y - d / 2, d, d,
                  fill=pal.bright_blue if last else pal.dark_navy)
         tb = add_textbox(slide, cx - d / 2, y - d / 2, d, d,
@@ -1417,6 +1516,7 @@ def add_stat_hero_split(prs, *,
 def add_qa_slide(prs, *,
                  line: str,
                  qr_caption: str,
+                 bg_path: Optional[str] = None,
                  page_number=None, section_marker=None,
                  source=None, footnote=None,
                  theme: Theme = MAX_THEME):
@@ -1424,6 +1524,12 @@ def add_qa_slide(prs, *,
     pal, typo, layout = theme.palette, theme.typography, theme.layout
     add_rect(slide, 0, 0, layout.slide_width_in, layout.slide_height_in,
              fill=rgb("022859"))
+    if bg_path and os.path.exists(bg_path):
+        crop = cover_crop(bg_path, layout.slide_width_in,
+                          layout.slide_height_in)
+        slide.shapes.add_picture(crop, Inches(0), Inches(0),
+                                 width=Inches(layout.slide_width_in),
+                                 height=Inches(layout.slide_height_in))
     tb = add_textbox(slide, 0.7, 0.85, 8.0, 2.3)
     p = tb.text_frame.paragraphs[0]
     r = p.add_run(); r.text = "Q&"
@@ -1624,6 +1730,7 @@ def add_method_grid(prs, *,
 
 
 _REGISTRY.update({
+    "art_divider": add_art_divider,
     "route_map": add_route_map,
     "speaker_panels": add_speaker_panels,
     "hbar_ranked": add_hbar_ranked,
