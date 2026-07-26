@@ -260,8 +260,15 @@ def add_speaker_panels(prs, *,
     for i, sp in enumerate(speakers):
         left = layout.margin_left_in + i * (panel_w + gap)
         photo_h = panel_h * 0.62
-        placeholder_box(slide, left, top, panel_w, photo_h,
-                        sp.get("photo_label", "Speaker photo"), theme=theme)
+        ph = sp.get("photo_path")
+        if ph and os.path.exists(ph):
+            crop = cover_crop(ph, panel_w, photo_h)
+            slide.shapes.add_picture(crop, Inches(left), Inches(top),
+                                     width=Inches(panel_w),
+                                     height=Inches(photo_h))
+        else:
+            placeholder_box(slide, left, top, panel_w, photo_h,
+                            sp.get("photo_label", "Speaker photo"), theme=theme)
         band_h = 0.95
         add_rect(slide, left, top + photo_h, panel_w, band_h,
                  fill=pal.dark_navy)

@@ -20,7 +20,8 @@ SRC_MAXDATA = "Max Data registry analysis, July 2026 (1.99M Thai juristic person
 import os
 from pptx.util import Inches
 
-GEN = "/home/user/mckinsey-pptx/webinar/assets/gen"
+ASSETS = "/home/user/mckinsey-pptx/webinar/assets"
+GEN = f"{ASSETS}/gen"
 
 
 def _ic(name):
@@ -134,14 +135,14 @@ b.add("audience_map", **S("Welcome"),
 b.add("speaker_panels", **S("Welcome"),
       title="Your guides tonight",
       speakers=[
-          {"name": "[Max · full name]", "role": "Founder, Max Solutions",
+          {"name": "Chatpong Lappitakpong", "role": "Founder, Max Solutions",
            "bullets": ["Advises 150+ Thai SMEs per year on M&A",
                        "Built Max Data, our AI analytics platform"],
-           "photo_label": "Photo: Max"},
-          {"name": "[Khun Vipin · full name]", "role": "Head of M&A, Max Solutions",
+           "photo_path": f"{ASSETS}/people/max-headshot.png"},
+          {"name": "Vipin Chugh", "role": "Head of M&A, Max Solutions",
            "bullets": ["Leads deal execution across 15 industries",
-                       "[Placeholder: deals closed / years experience]"],
-           "photo_label": "Photo: Khun Vipin"},
+                       "Runs the buy-side and sell-side process end to end"],
+           "photo_path": f"{ASSETS}/people/vipin-headshot.jpg"},
       ])
 
 # =====================================================================
@@ -347,10 +348,9 @@ b.add("quote_breather", **S("1 · Why now"),
       quote="We watched a generation of Thai founders build companies their "
             "children didn't want to run. Someone had to build the bridge "
             "between those owners and the people ready to take over.",
-      author="[Max · full name]",
-      author_title="Founder, Max Solutions · placeholder quote, edit to taste",
-      photo_label="Photo: Max",
-      photo_path=f"{GEN}/scenes/quote-founder.png",
+      author="Chatpong Lappitakpong",
+      author_title="Founder, Max Solutions",
+      photo_path=f"{ASSETS}/people/max-headshot.png",
       source="Max Solutions")
 
 # =====================================================================
@@ -568,26 +568,77 @@ b.add("screenshot_slide", **S("3 · The access"),
       claim="Type a thesis. Get a board-ready target list in one afternoon.",
       stats=[{"value": "1.99M", "label": "companies tracked"},
              {"value": "9.8M", "label": "financial statements"},
-             {"value": "4.2M", "label": "directorships mapped"}],
+             {"value": "100k+", "label": "companies with director contacts"}],
       layout_mode="hero",
       source="Max Data platform, July 2026")
 
 b.add("screenshot_slide", **S("3 · The access"),
-      title="One thesis, one afternoon: cold-chain 3PL operators",
+      title="Step 1: size the niche before you pick a target",
+      placeholder_label="Screenshot: Max Data market page",
+      image_path=f"{ASSETS}/shots/md-market-top.png",
+      image_caption="Max Data market page, TSIC 49331: road transport of refrigerated freight",
+      kicker="Cold chain, worked example",
+      claim="484 companies, ฿5.9B, and nobody owns it",
+      bullets=["Market size, growth and survival rate for any of 1,265 industry codes",
+               "Concentration score says perfect competition, so no incumbent blocks a new entrant",
+               "The top ten are ranked for you, which is where a buy-side shortlist starts"],
+      stats=[{"value": "484", "label": "registered companies"},
+             {"value": "฿5.9B", "label": "market revenue"},
+             {"value": "83.5%", "label": "survival rate"}],
+      layout_mode="hero",
+      shot_width=11.9,
+      source="Max Data market module, July 2026")
+
+b.add("screenshot_slide", **S("3 · The access"),
+      title="Step 2: open the leader and read twenty years in one screen",
+      placeholder_label="Screenshot: Max Data company page",
+      image_path=f"{ASSETS}/shots/md-company-header.png",
+      image_caption="Max Data company page. Every figure traces to a filed statement",
+      kicker="Cold chain, worked example",
+      claim="What they do, what they own, and who sits on the board",
+      bullets=["Revenue, profit, assets and equity with the year-on-year move",
+               "Registered capital, company age, exact TSIC code and address",
+               "The board, so you already know the name before you reach out"],
+      stats=[{"value": "฿995.8M", "label": "FY2025 revenue, +37.1%"},
+             {"value": "20.44%", "label": "20-year revenue CAGR"},
+             {"value": "16.86%", "label": "share of its TSIC"}],
+      layout_mode="hero",
+      shot_width=11.9,
+      source="Max Data company page, TO.TOO Chiang Mai Seafood, July 2026")
+
+b.add("screenshot_slide", **S("3 · The access"),
+      title="Step 3: turn a name on a board into an email you can send",
+      placeholder_label="Screenshot: Max Data E-Finding",
+      image_path=f"{ASSETS}/shots/maxdata-efinding-blur.png",
+      image_caption="Max Data E-Finding. Name and result masked here for privacy, live in the product",
+      shot_width=10.8,
+      kicker="Cold chain, worked example",
+      claim="The last mile most buyers never cross",
+      bullets=["Give the engine a director name and the company domain",
+               "It generates, cross-references and confirms, then stops when it is sure",
+               "You reach the decision maker, not a general enquiries inbox"],
+      stats=[{"value": "100k+", "label": "companies with contacts"},
+             {"value": "High", "label": "confidence on this result"},
+             {"value": "1 click", "label": "single or bulk CSV"}],
+      layout_mode="hero",
+      source="Max Data E-Finding, July 2026")
+
+b.add("screenshot_slide", **S("3 · The access"),
+      title="All of it in one workflow, in one day",
       placeholder_label="Screenshot: Max Data research cockpit",
       image_path="/home/user/mckinsey-pptx/webinar/assets/shots/maxdata-cockpit.png",
       image_caption="Max Data research cockpit. Verification and contact columns are generated per company, then checked against the registry",
-      kicker="Worked example",
-      claim="From 44,190 logistics companies to 22 you could call tomorrow",
-      bullets=["We asked one question: which cold-chain operators are "
-               "credible and approachable acquisition targets",
-               "Every row carries what the company actually does, its "
-               "revenue, margin, and age, and a verified cold-chain flag",
-               "The last column is the decision maker, so outreach starts "
-               "the same day"],
-      stats=[{"value": "22", "label": "verified targets"},
-             {"value": "฿369M", "label": "largest in the set"},
-             {"value": "1 day", "label": "thesis to call list"}],
+      kicker="Thesis to contact, one workflow",
+      claim="Thesis, research and contact in a single sheet",
+      bullets=["A typical team needs more than a week to build a list and "
+               "find the contacts, working across three or four tools",
+               "Here it is one question, one sheet, and every column is "
+               "labelled with where the answer came from",
+               "Built on Max Data and run by AI, with a human approving "
+               "each step"],
+      stats=[{"value": "1 day", "label": "thesis to call list"},
+             {"value": "1 week+", "label": "the manual alternative"},
+             {"value": "1 sheet", "label": "instead of four tools"}],
       layout_mode="hero",
       shot_width=11.9,
       source="Max Data research cockpit, July 2026. Director details are public registry records")
