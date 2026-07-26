@@ -307,24 +307,29 @@ def add_speaker_panels(prs, *,
                         first=True)
         enable_text_shrink(tb.text_frame)
 
-    # Shared credential column right of the panels
+    # Shared credential column right of the panels. Sized from the longest
+    # bio so no bullet is ever silently dropped.
     cleft = layout.margin_left_in + 2 * panel_w + gap + 0.6
     cwidth = layout.slide_width_in - layout.margin_right_in - cleft
+    avail = layout.footer_top_in - (top + 0.25) - 0.15
+    block = avail / max(len(speakers), 1)
     cy = top + 0.25
     for sp in speakers:
+        bl_list = list(sp.get("bullets", []))
         tb = add_textbox(slide, cleft, cy, cwidth, 0.28)
         write_paragraph(tb.text_frame, sp["name"].upper(),
                         size=typo.small_size, bold=True,
                         color=pal.footer_gray, family=typo.family, first=True)
         add_line(slide, cleft, cy + 0.32, cleft + 1.2, cy + 0.32,
                  color=pal.bright_blue, width_pt=1.5)
-        tb = add_textbox(slide, cleft, cy + 0.45, cwidth, 1.15)
-        for j, bl in enumerate(sp.get("bullets", [])[:2]):
-            write_paragraph(tb.text_frame, bl, size=typo.body_size + 1,
+        tb = add_textbox(slide, cleft, cy + 0.45, cwidth, block - 0.60)
+        size = typo.body_size + 1 if len(bl_list) <= 2 else typo.body_size
+        for j, bl in enumerate(bl_list):
+            write_paragraph(tb.text_frame, bl, size=size,
                             color=pal.text_dark, family=typo.family,
-                            bullet=True, first=(j == 0), space_after=6)
+                            bullet=True, first=(j == 0), space_after=5)
         enable_text_shrink(tb.text_frame)
-        cy += 1.85
+        cy += block
     return slide
 
 
