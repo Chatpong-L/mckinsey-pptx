@@ -725,6 +725,7 @@ def add_stat_hero_navy(prs, *,
                        waffle_filled: int = 81,
                        waffle_caption: str,
                        closing: str,
+                       method: Optional[Sequence[dict]] = None,
                        bg_path: Optional[str] = None,
                        page_number=None, section_marker=None,
                        source=None, footnote=None,
@@ -739,6 +740,28 @@ def add_stat_hero_navy(prs, *,
         slide.shapes.add_picture(crop, Inches(0), Inches(0),
                                  width=Inches(layout.slide_width_in),
                                  height=Inches(layout.slide_height_in))
+    if method:
+        my = 5.62
+        tb = add_textbox(slide, layout.margin_left_in, my - 0.34, 11.0, 0.28)
+        write_paragraph(tb.text_frame, "HOW WE ESTIMATE THIS",
+                        size=8, bold=True, color=pal.bright_blue,
+                        family=typo.family, first=True)
+        seg = (layout.slide_width_in - layout.margin_left_in
+               - layout.margin_right_in) / len(method)
+        for mi, st in enumerate(method):
+            mx = layout.margin_left_in + mi * seg
+            add_rect(slide, mx, my, 0.22, 0.22, fill=pal.bright_blue)
+            tb = add_textbox(slide, mx + 0.02, my, 0.22, 0.22,
+                             anchor=MSO_ANCHOR.MIDDLE)
+            write_paragraph(tb.text_frame, str(mi + 1), size=8,
+                            bold=True, color=rgb("022859"),
+                            family=typo.family, align=PP_ALIGN.CENTER,
+                            first=True)
+            tb = add_textbox(slide, mx + 0.34, my - 0.05, seg - 0.5, 0.72)
+            write_paragraph(tb.text_frame, st["text"],
+                            size=typo.small_size, color=pal.light_blue,
+                            family=typo.family, first=True)
+            enable_text_shrink(tb.text_frame)
     tb = add_textbox(slide, layout.margin_left_in, 0.45, 10.0, 0.35)
     write_paragraph(tb.text_frame, title_eyebrow.upper(),
                     size=typo.body_size, bold=True, color=pal.light_blue,
@@ -1195,14 +1218,29 @@ def add_service_spectrum(prs, *,
                      line=pal.bright_blue, line_width=1.5)
         fg = pal.white if dark else pal.dark_navy
         sub = pal.light_blue if dark else pal.footer_gray
-        if ln.get("icon") and os.path.exists(ln["icon"]):
+        logo = ln.get("logo")
+        if logo and os.path.exists(logo):
+            from PIL import Image as _Im
+            lw, lh = _Im.open(logo).size
+            plate_h = 0.44
+            disp_h = 0.26
+            disp_w = min(disp_h * lw / lh, p_w - 1.9)
+            disp_h = disp_w * lh / lw
+            plate_w = disp_w + 0.26
+            px = x + p_w - plate_w - 0.28
+            add_rect(slide, px, p_top + 0.22, plate_w, plate_h, fill=pal.white)
+            slide.shapes.add_picture(logo, Inches(px + 0.13),
+                                     Inches(p_top + 0.22 + (plate_h - disp_h) / 2),
+                                     width=Inches(disp_w),
+                                     height=Inches(disp_h))
+        elif ln.get("icon") and os.path.exists(ln["icon"]):
             slide_icon(slide, ln["icon"], x + 0.3, p_top + 0.28, 0.52)
-        tb = add_textbox(slide, x + 0.95, p_top + 0.30, p_w - 1.1, 0.26)
+        tb = add_textbox(slide, x + 0.3, p_top + 0.30, p_w - 2.0, 0.26)
         write_paragraph(tb.text_frame, ln["kicker"].upper(),
                         size=typo.small_size,
                         bold=True, color=pal.bright_blue,
                         family=typo.family, first=True)
-        tb = add_textbox(slide, x + 0.95, p_top + 0.56, p_w - 1.1, 0.34)
+        tb = add_textbox(slide, x + 0.3, p_top + 0.58, p_w - 1.0, 0.34)
         write_paragraph(tb.text_frame, ln["name"], size=typo.body_size + 3,
                         bold=True, color=fg, family=typo.family, first=True)
         enable_text_shrink(tb.text_frame)
@@ -1226,6 +1264,14 @@ def add_service_spectrum(prs, *,
         write_paragraph(tb.text_frame, ln["stat_label"].upper(), size=8.5,
                         color=sub, family=typo.family, first=True)
         enable_text_shrink(tb.text_frame)
+        if ln.get("site"):
+            tb = add_textbox(slide, x + 0.3, p_top + p_h + 0.10, p_w - 0.6,
+                             0.26)
+            write_paragraph(tb.text_frame, ln["site"],
+                            size=typo.small_size, bold=True,
+                            color=pal.bright_blue, family=typo.family,
+                            first=True)
+            enable_text_shrink(tb.text_frame)
 
     # conversion band with scarcity chip
     b_y = p_top + p_h + 0.28
@@ -2175,11 +2221,99 @@ def add_method_grid(prs, *,
     return slide
 
 
+
+# ---------- appendix · live mandates ----------
+
+def add_mandate_grid(prs, *,
+                     title: str,
+                     subtitle: Optional[str] = None,
+                     groups: Sequence[dict],
+                     note: Optional[str] = None,
+                     page_number=None, section_marker=None,
+                     source=None, footnote=None,
+                     theme: Theme = MAX_THEME):
+    """Live-mandate inventory. groups: [{sector, rows:[{project, what,
+    rev, ebitda, ask}]}]. Sector label sits in a left gutter, mandates
+    run as hairline-separated rows with three right-aligned money columns."""
+    slide = blank_slide(prs)
+    add_chrome(slide, title=title, theme=theme, page_number=page_number,
+               section_marker=section_marker, source=source, footnote=footnote)
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+    if subtitle:
+        tb = add_textbox(slide, layout.margin_left_in, 1.30, 11.5, 0.28)
+        write_paragraph(tb.text_frame, subtitle, size=typo.small_size + 1,
+                        color=pal.footer_gray, family=typo.family, first=True)
+
+    ml = layout.margin_left_in
+    right = layout.slide_width_in - layout.margin_right_in
+    c_sector = ml
+    c_proj = ml + 2.25
+    c_what = ml + 4.15
+    c_rev, c_ebitda, c_ask = right - 3.30, right - 2.10, right - 0.95
+    top = 1.72
+    for x, lab in ((c_proj, "PROJECT"), (c_what, "WHAT IT IS"),
+                   (c_rev, "REVENUE"), (c_ebitda, "EBITDA"), (c_ask, "ASK")):
+        money = x >= c_rev
+        tb = add_textbox(slide, x - 0.15 if money else x, top,
+                         1.05 if money else 2.0, 0.24)
+        write_paragraph(tb.text_frame, lab, size=8, bold=True,
+                        color=pal.footer_gray, family=typo.family,
+                        align=PP_ALIGN.RIGHT if money else PP_ALIGN.LEFT,
+                        first=True)
+    add_line(slide, ml, top + 0.28, right, top + 0.28,
+             color=pal.dark_navy, width_pt=1.0)
+
+    y = top + 0.38
+    row_h = 0.42
+    for g in groups:
+        gy = y
+        n = len(g["rows"])
+        add_rect(slide, ml, y + 0.04, 0.055, n * row_h - 0.08,
+                 fill=pal.bright_blue)
+        tb = add_textbox(slide, ml + 0.16, y + 0.03, 2.0, 0.62)
+        write_paragraph(tb.text_frame, g["sector"], size=typo.small_size,
+                        bold=True, color=pal.dark_navy, family=typo.family,
+                        first=True)
+        enable_text_shrink(tb.text_frame)
+        for r in g["rows"]:
+            tb = add_textbox(slide, c_proj, y + 0.05, 1.85, 0.30)
+            write_paragraph(tb.text_frame, r["project"],
+                            size=typo.body_size, bold=True,
+                            color=pal.dark_navy, family=typo.family,
+                            first=True)
+            enable_text_shrink(tb.text_frame)
+            tb = add_textbox(slide, c_what, y + 0.06, c_rev - c_what - 0.25,
+                             0.30)
+            write_paragraph(tb.text_frame, r["what"],
+                            size=typo.small_size + 1, color=pal.text_dark,
+                            family=typo.family, first=True)
+            enable_text_shrink(tb.text_frame)
+            for x, key, bold_ in ((c_rev, "rev", False),
+                                  (c_ebitda, "ebitda", False),
+                                  (c_ask, "ask", True)):
+                tb = add_textbox(slide, x - 0.15, y + 0.06, 1.05, 0.30)
+                write_paragraph(tb.text_frame, r[key],
+                                size=typo.small_size + 1, bold=bold_,
+                                color=pal.dark_navy if bold_ else pal.text_dark,
+                                family=typo.family, align=PP_ALIGN.RIGHT,
+                                first=True)
+            y += row_h
+        add_line(slide, ml, y, right, y, color=pal.grid_gray, width_pt=0.75)
+    if note:
+        tb = add_textbox(slide, ml, layout.footer_top_in - 0.42, 11.8, 0.30)
+        write_paragraph(tb.text_frame, note, size=typo.small_size,
+                        italic=True, color=pal.footer_gray,
+                        family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
+    return slide
+
+
 _REGISTRY.update({
     "art_divider": add_art_divider,
     "audience_map": add_audience_map,
     "service_spectrum": add_service_spectrum,
     "journey_matrix": add_journey_matrix,
+    "mandate_grid": add_mandate_grid,
     "route_map": add_route_map,
     "speaker_panels": add_speaker_panels,
     "hbar_ranked": add_hbar_ranked,

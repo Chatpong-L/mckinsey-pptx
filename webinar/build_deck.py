@@ -45,7 +45,7 @@ b = PresentationBuilder(theme=MAX_THEME)
 _engine_add = b.add
 
 SECTION_OF = {
-    "1 · Why now": 0, "2 · The lens": 1, "3 · The access": 2,
+    "1 · Why now": 0, "2 · The access": 1, "3 · The lens": 2,
     "4 · The path": 3, "5 · Proof": 4, "6 · Next step": 5,
 }
 
@@ -94,8 +94,8 @@ b.add("route_map", **S("Agenda"),
       subtitle="Six stops, 90 minutes. The bar at the bottom of every slide shows where we are.",
       stops=[
           {"keyword": "WHY NOW", "descriptor": "The reshuffle and the succession wave"},
-          {"keyword": "THE LENS", "descriptor": "5 green flags, 3 red flags"},
           {"keyword": "THE ACCESS", "descriptor": "Community, marketplace, advisory, data"},
+          {"keyword": "THE LENS", "descriptor": "5 green flags, 3 red flags"},
           {"keyword": "THE PATH", "descriptor": "Thesis to keys in 6 steps"},
           {"keyword": "PROOF", "descriptor": "Closed deals and the search-fund wave"},
           {"keyword": "NEXT STEP", "descriptor": "What to do tomorrow morning"},
@@ -110,22 +110,22 @@ b.add("audience_map", **S("Welcome"),
            "value": "A build-vs-buy case for your growth plan, and Max Data's "
                     "registry intelligence and director network to power your "
                     "pipeline.",
-           "stops": [1, 3, 4], "key_stop": 3},
+           "stops": [1, 2, 4], "key_stop": 2},
           {"icon": _ic("book"), "who": "IR & listed-company leaders",
            "detail": "market narrative for boards and investors",
            "value": "A data-backed read on the Thai market, and the M&A "
                     "growth story your investors are starting to ask about.",
-           "stops": [1, 3, 5], "key_stop": 1},
+           "stops": [1, 2, 5], "key_stop": 1},
           {"icon": _ic("storefront"), "who": "Owners & founders",
            "detail": "exit, succession, or just curious",
            "value": "What buyers check first, what your business is worth, "
                     "and how a quiet, well-run exit actually happens.",
-           "stops": [2, 4, 6], "key_stop": 2},
+           "stops": [3, 4, 6], "key_stop": 3},
           {"icon": _ic("handshake"), "who": "Investors, advisors & explorers",
            "detail": "first deal or fiftieth",
            "value": "Where real deal flow surfaces, proof the model pays, "
                     "and how the referral economy around it works.",
-           "stops": [3, 5, 6], "key_stop": 3},
+           "stops": [2, 5, 6], "key_stop": 2},
       ],
       offer="Leading a team with one industry and one goal? We run tailored "
             "private sessions for leadership teams. Ask us after Q&A, or book "
@@ -140,8 +140,8 @@ b.add("speaker_panels", **S("Welcome"),
                        "Built Max Data, our AI analytics platform"],
            "photo_path": f"{ASSETS}/people/max-headshot.png"},
           {"name": "Vipin Chugh", "role": "Head of M&A, Max Solutions",
-           "bullets": ["Leads deal execution across 15 industries",
-                       "Runs the buy-side and sell-side process end to end"],
+           "bullets": ["16+ years of M&A advisory experience",
+                       "Closes 3+ deals a year on average, end to end"],
            "photo_path": f"{ASSETS}/people/vipin-headshot.jpg"},
       ])
 
@@ -174,10 +174,10 @@ b.add("hbar_ranked", **S("1 · Why now"),
       takeaway="Measured from the 2020 trough, so tourism-linked sectors flatter first. Wholesale & retail is the biggest in baht: ฿33.5T of FY2025 revenue.",
       unit_note="Revenue growth FY2020 to FY2025, %",
       items=[
-          {"label": "Accommodation & food", "value": 141, "display": "+141%"},
+          {"label": "Hotels & hospitality", "value": 141, "display": "+141%"},
           {"label": "Arts & entertainment", "value": 140, "display": "+140%"},
           {"label": "Wholesale & retail", "value": 90, "display": "+90%"},
-          {"label": "Other services", "value": 85, "display": "+85%"},
+          {"label": "Repair & personal services", "value": 85, "display": "+85%"},
           {"label": "Mining & quarrying", "value": 74, "display": "+74%"},
       ],
       annotation={"text": "Gold-shop trading alone grew ฿1.9T → ฿8.85T",
@@ -189,17 +189,17 @@ b.add("hbar_ranked", **S("1 · Why now"),
       takeaway="Every one of these is a hunting ground. Falling revenue makes owners answer the phone.",
       direction="left",
       items=[
-          {"label": "Investment holding companies", "value": 40, "display": "-40%",
-           "note": "Firms whose business is holding assets, not trading"},
-          {"label": "Direct-sales retail (MLM)", "value": 36, "display": "-36%",
-           "note": "Door-to-door and network selling, displaced by e-commerce"},
-          {"label": "TV programme production", "value": 26, "display": "-26%",
-           "note": "Ad budgets moved to streaming and social"},
-          {"label": "Rubber & plastics wholesale", "value": 19, "display": "-19%",
-           "note": "Squeezed between factories and end buyers"},
-          {"label": "Residential developers", "value": 18, "display": "-18%",
+{"label": "Residential developers", "value": 18, "display": "-18%",
            "note": "Unsold inventory, high household debt"},
-      ],
+{"label": "Rubber & plastics wholesale", "value": 19, "display": "-19%",
+           "note": "Squeezed between factories and end buyers"},
+{"label": "TV programme production", "value": 26, "display": "-26%",
+           "note": "Ad budgets moved to streaming and social"},
+{"label": "Direct-sales retail (MLM)", "value": 36, "display": "-36%",
+           "note": "Door-to-door and network selling, displaced by e-commerce"},
+{"label": "Investment holding companies", "value": 40, "display": "-40%",
+           "note": "Firms whose business is holding assets, not trading"},
+                                                        ],
       unit_note="Revenue change FY2020 to FY2025, %. No whole sector shrank in nominal terms, but these niches did",
       source=SRC_MAXDATA)
 
@@ -213,10 +213,10 @@ b.add("sector_matrix", **S("1 · Why now"),
           {"name": "Manufacturing", "icon": _ic("factory"), "count": "109,063",
            "note": "฿21.1T revenue, the largest of these four",
            "growth": 30, "margin_from": "4.3%", "margin_to": "4.3% steady"},
-          {"name": "F&B & hospitality", "icon": _ic("food"), "count": "48,564",
+          {"name": "F&B & Hospitality", "icon": _ic("food"), "count": "48,564",
            "note": "The steepest recovery arc",
            "growth": 141, "margin_from": "-22%", "margin_to": "+7.4%"},
-          {"name": "Tech & information", "icon": _ic("chip"), "count": "29,027",
+          {"name": "Tech & Information", "icon": _ic("chip"), "count": "29,027",
            "note": "Growth in profit, not just sales",
            "growth": 18, "margin_from": "5.9%", "margin_to": "7.5%"},
       ],
@@ -288,7 +288,7 @@ b.add("dimension_table", **S("1 · Why now"),
       rows=[
           {"dim": "Who buys",
            "left": "Conglomerates and funds",
-           "right": "Listed corporates, mid-size firms, individuals"},
+           "right": "Listed corporates, mid-size firms, high-net-worth individuals"},
           {"dim": "Deal size",
            "left": "Billions",
            "right": "SME targets: ฿10M to ฿1B revenue"},
@@ -319,10 +319,15 @@ b.add("stat_hero_navy", **S("1 · Why now"),
       stat="81%",
       stat_label="of Thailand's 20-year-plus companies have no next-generation director on the board",
       waffle_filled=81,
-      waffle_caption="111,304 of ~137,000 operating companies over 20 years old: "
-                     "every board seat held by the pre-1984 generation",
+      waffle_caption="111,304 of about 137,000 operating companies over 20 years old, "
+                     "with no younger-generation director on the board",
+      method=[
+          {"text": "Take every company in the registry that has traded for 20 years or more"},
+          {"text": "Group the directors on each board into generations, using the era their registry records date from"},
+          {"text": "Count the boards where nobody from the younger generation has been added"},
+      ],
       closing="These companies need successors. Increasingly, that means buyers.",
-      source="Max Data registry analysis of 4.2M directorships, birth cohorts from national-ID structure, July 2026")
+      source="Max Data analysis of 4.2M public directorship records, July 2026. Generation is inferred from registry record era, not from any personal data we hold")
 
 b.add("stat_band", **S("1 · Why now"),
       title="The demographic clock behind it is public record",
@@ -354,15 +359,205 @@ b.add("quote_breather", **S("1 · Why now"),
       source="Max Solutions")
 
 # =====================================================================
-# SECTION 2 · WHAT GOOD LOOKS LIKE
+# SECTION 2 · WHERE DEALS COME FROM
 # =====================================================================
 
 b.add("art_divider", art_path=f"{GEN}/dividers/div-2.png",
       section_number="02",
+      section_title="Where deals actually come from",
+      subtitle="From two million registered companies to the handful worth your time")
+
+b.add("taper_funnel", **S("2 · The access"),
+      title="Finding the needle: Thailand's company universe",
+      stages=[
+          {"name": "Registered juristic persons", "value": "1,989,709",
+           "description": "Every company ever registered in Thailand"},
+          {"name": "Operating today", "value": "993,373",
+           "description": "Half the registry is already defunct or dissolved"},
+          {"name": "Filing real revenue", "value": "648,304",
+           "description": "Revenue above zero in FY2025"},
+          {"name": "SME band ฿10M-1B", "value": "176,962",
+           "description": "The deal size this webinar is about"},
+          {"name": "Core ฿100M-1B", "value": "37,045",
+           "description": "Only 1 in 18 revenue-reporting companies"},
+          {"name": "Your shortlist", "value": "10-30",
+           "description": "What a focused thesis produces"},
+      ],
+      chip="1 in 18 companies sits in the core band",
+      source=SRC_MAXDATA)
+
+b.add("ceilings", **S("2 · The access"),
+      title="How everyone finds deals today, and where each channel stops",
+      takeaway="Each channel works. Each has a ceiling you will hit.",
+      channels=[
+          {"name": "Word of mouth", "value": "2-3", "value_label": "DEALS A YEAR", "ceiling": "2-3 deals a year, if lucky",
+           "note": "Friends, suppliers, golf partners. High trust, tiny reach"},
+          {"name": "Online listings", "value": "100s", "value_label": "LISTINGS, UNEVEN QUALITY", "ceiling": "the good ones go fast",
+           "note": "Marketplaces and brokers' sites. Wide reach, uneven quality"},
+          {"name": "Intermediaries", "value": "1", "value_label": "MANDATE AT A TIME", "ceiling": "needs a clear mandate",
+           "note": "Advisors and boutique firms. Screened deals, real process"},
+      ],
+      breakout="Breaking every ceiling at once is what the next four slides are about",
+      source="Max Solutions market observation")
+
+b.add("access_ladder", **S("2 · The access"),
+      title="Our answer: three doors, one ecosystem",
+      steps=[
+          {"kicker": "Door 1 · Community", "icon": _ic("door-white"), "stat": "80,000+ members",
+           "bullets": ["DealFlow Facebook community",
+                       "Off-market chatter surfaces here first"]},
+          {"kicker": "Door 2 · Marketplace", "icon": _ic("door-white"), "stat": "100+ live deals",
+           "bullets": ["DealFlow Market listings",
+                       "Screened sellers, 15 industries"]},
+          {"kicker": "Door 3 · Advisory", "icon": _ic("door-white"), "stat": "150+ SMEs/yr",
+           "bullets": ["Full-mandate M&A advisory",
+                       "Our deal team runs it end to end"]},
+      ],
+      source="Max Solutions, July 2026")
+
+b.add("screenshot_slide", **S("2 · The access"),
+      title="Inside the community: where off-market deals surface",
+      placeholder_label="Screenshot: DealFlow Facebook community",
+      image_path=f"{ASSETS}/shots/fb-group-clean.png",
+      image_caption="ขายกิจการ ขายโรงงาน หานักลงทุน, our public Facebook group. Search the name to find it",
+      kicker="Door 1 · Community",
+      claim="Sellers test the water here before any listing exists",
+      bullets=["Thailand's largest SME buy-and-sell group, free to join",
+               "Owners, buyers, and advisors in one room",
+               "Posts are occasional, but this is where sellers surface first"],
+      overlap_stat={"value": "80,100", "label": "members and counting"},
+      layout_mode="right",
+      source="DealFlow community, July 2026")
+
+b.add("screenshot_slide", **S("2 · The access"),
+      title="Inside DealFlow Market: screened deals, real numbers",
+      placeholder_label="Screenshot: DealFlow Market listings page",
+      image_path="/home/user/mckinsey-pptx/webinar/assets/shots/dealflow-market.png",
+      image_caption="dealflowmarket.com/listing, live capture July 2026",
+      kicker="Door 2 · Marketplace",
+      claim="Every listing verified before it goes up",
+      bullets=["Real asking prices, real revenue, real provinces",
+               "Filter by sector, size, and location"],
+      stats=[{"value": "100+", "label": "live deals"},
+             {"value": "15", "label": "industries"}],
+      layout_mode="left",
+      source="DealFlow Market, July 2026")
+
+b.add("metro_line", **S("2 · The access"),
+      title="Max Data: our AI analytics platform, built for every stage",
+      stops=[
+          {"name": "Research", "icon": _ic("chip"),
+           "description": "Market and industry trends"},
+          {"name": "Source", "icon": _ic("target"),
+           "description": "Filter to targets that fit your thesis"},
+          {"name": "Validate", "icon": _ic("book"),
+           "description": "10 years of financials on any company"},
+          {"name": "Diligence", "icon": _ic("magnifier"),
+           "description": "Directors, licences, branches, contracts"},
+          {"name": "Reach", "icon": _ic("handshake"),
+           "description": "Contact the actual decision maker"},
+      ],
+      input_note="1.99M companies in",
+      output_note="the decision maker out",
+      source="Max Data platform, July 2026")
+
+b.add("screenshot_slide", **S("2 · The access"),
+      title="Max Data in 90 seconds",
+      placeholder_label="Screenshot or live demo: Max Data screener",
+      placeholder_note="Suggested demo: Logistics, revenue ฿10M-1B → 9,399 live targets",
+      image_path=("/home/user/mckinsey-pptx/webinar/assets/shots/maxdata-screener.png"
+                  if __import__("os").path.exists(
+                      "/home/user/mckinsey-pptx/webinar/assets/shots/maxdata-screener.png")
+                  else None),
+      image_caption="Max Data screener: Logistics, ฿10M-1B revenue → 9,399 companies",
+      claim="Type a thesis. Get a board-ready target list in one afternoon.",
+      stats=[{"value": "1.99M", "label": "companies tracked"},
+             {"value": "9.8M", "label": "financial statements"},
+             {"value": "100k+", "label": "companies with director contacts"}],
+      layout_mode="hero",
+      source="Max Data platform, July 2026")
+
+b.add("screenshot_slide", **S("2 · The access"),
+      title="Step 1: size the niche before you pick a target",
+      placeholder_label="Screenshot: Max Data market page",
+      image_path=f"{ASSETS}/shots/md-market-top.png",
+      image_caption="Max Data market page, TSIC 49331: road transport of refrigerated freight",
+      kicker="Cold chain, worked example",
+      claim="484 companies, ฿5.9B, and nobody owns it",
+      bullets=["Market size, growth and survival rate for any of 1,265 industry codes",
+               "Concentration score says perfect competition, so no incumbent blocks a new entrant",
+               "The top ten are ranked for you, which is where a buy-side shortlist starts"],
+      stats=[{"value": "484", "label": "registered companies"},
+             {"value": "฿5.9B", "label": "market revenue"},
+             {"value": "83.5%", "label": "survival rate"}],
+      layout_mode="hero",
+      shot_width=11.9,
+      source="Max Data market module, July 2026")
+
+b.add("screenshot_slide", **S("2 · The access"),
+      title="Step 2: open the leader and read twenty years in one screen",
+      placeholder_label="Screenshot: Max Data company page",
+      image_path=f"{ASSETS}/shots/md-company-header.png",
+      image_caption="Max Data company page. Every figure traces to a filed statement",
+      kicker="Cold chain, worked example",
+      claim="What they do, what they own, and who sits on the board",
+      bullets=["Revenue, profit, assets and equity with the year-on-year move",
+               "Registered capital, company age, exact TSIC code and address",
+               "The board, so you already know the name before you reach out"],
+      stats=[{"value": "฿995.8M", "label": "FY2025 revenue, +37.1%"},
+             {"value": "20.44%", "label": "20-year revenue CAGR"},
+             {"value": "16.86%", "label": "share of its TSIC"}],
+      layout_mode="hero",
+      shot_width=11.9,
+      source="Max Data company page, TO.TOO Chiang Mai Seafood, July 2026")
+
+b.add("screenshot_slide", **S("2 · The access"),
+      title="Step 3: turn a name on a board into an email you can send",
+      placeholder_label="Screenshot: Max Data E-Finding",
+      image_path=f"{ASSETS}/shots/maxdata-efinding-blur.png",
+      image_caption="Max Data E-Finding. Name and result masked here for privacy, live in the product",
+      shot_width=10.8,
+      kicker="Cold chain, worked example",
+      claim="The last mile most buyers never cross",
+      bullets=["Give the engine a director name and the company domain",
+               "It generates, cross-references and confirms, then stops when it is sure",
+               "You reach the decision maker, not a general enquiries inbox"],
+      stats=[{"value": "100k+", "label": "companies with contacts"},
+             {"value": "High", "label": "confidence on this result"},
+             {"value": "1 click", "label": "single or bulk CSV"}],
+      layout_mode="hero",
+      source="Max Data E-Finding, July 2026")
+
+b.add("screenshot_slide", **S("2 · The access"),
+      title="All of it in one workflow, in one day",
+      placeholder_label="Screenshot: Max Data research cockpit",
+      image_path="/home/user/mckinsey-pptx/webinar/assets/shots/maxdata-cockpit.png",
+      image_caption="Max Data research cockpit. Verification and contact columns are generated per company, then checked against the registry",
+      kicker="Thesis to contact, one workflow",
+      claim="Thesis, research and contact in a single sheet",
+      bullets=["A typical team needs more than a week to build a list and "
+               "find the contacts, working across three or four tools",
+               "Here it is one question, one sheet, and every column is "
+               "labelled with where the answer came from",
+               "Built on Max Data and run by AI, with a human approving "
+               "each step"],
+      stats=[{"value": "1 day", "label": "thesis to call list"},
+             {"value": "1 week+", "label": "the manual alternative"},
+             {"value": "1 sheet", "label": "instead of four tools"}],
+      layout_mode="hero",
+      shot_width=11.9,
+      source="Max Data research cockpit, July 2026. Director details are public registry records")
+
+# =====================================================================
+# SECTION 3 · WHAT GOOD LOOKS LIKE
+# =====================================================================
+
+b.add("art_divider", art_path=f"{GEN}/dividers/div-3.png",
+      section_number="03",
       section_title="What a good target looks like",
       subtitle="The lens our deal team applies before we ever talk price")
 
-b.add("poll_slide", **S("2 · The lens"),
+b.add("poll_slide", **S("3 · The lens"),
       title="Quick pulse check",
       question="You are shown a company for sale. What do you check first?",
       options=["The financial statements",
@@ -372,7 +567,7 @@ b.add("poll_slide", **S("2 · The lens"),
       instruction="Vote now. We'll show you our order in a minute",
       ornament_path=f"{GEN}/backdrops/poll-corner-alpha.png")
 
-b.add("chevron_flags", **S("2 · The lens"),
+b.add("chevron_flags", **S("3 · The lens"),
       title="The Green 5: what our analysts look for in every target",
       subtitle="Five signals our deal team scores before anyone talks price.",
       flags=[
@@ -395,7 +590,7 @@ b.add("chevron_flags", **S("2 · The lens"),
       rule="Three or more strong is worth a conversation. Fewer, and you are buying a job, not a business.",
       source="Max Solutions target evaluation framework")
 
-b.add("keyline_panels", **S("2 · The lens"),
+b.add("keyline_panels", **S("3 · The lens"),
       title="The Red 3: where deals die in Thailand",
       subtitle="Our deal team's kill criteria, in the order they usually surface",
       panels=[
@@ -412,11 +607,11 @@ b.add("keyline_panels", **S("2 · The lens"),
       closing="One red flag unresolved = walk away.",
       source="Max Solutions deal experience, 150+ SME mandates per year")
 
-b.add("ledgers", **S("2 · The lens"),
+b.add("ledgers", **S("3 · The lens"),
       title="The two-books problem, and why diligence pays for itself",
       source="Max Solutions deal experience")
 
-b.add("scorecard_slide", **S("2 · The lens"),
+b.add("scorecard_slide", **S("3 · The lens"),
       title="Take this home: the 60-second target scorecard",
       subtitle="Screenshot this. Rate every target Weak or Strong per line. One Weak in the Red 3 kills the deal",
       groups=[
@@ -452,196 +647,6 @@ b.add("scorecard_slide", **S("2 · The lens"),
            ]},
       ],
       source="Max Solutions target evaluation framework")
-
-# =====================================================================
-# SECTION 3 · WHERE DEALS COME FROM
-# =====================================================================
-
-b.add("art_divider", art_path=f"{GEN}/dividers/div-3.png",
-      section_number="03",
-      section_title="Where deals actually come from",
-      subtitle="From two million registered companies to the handful worth your time")
-
-b.add("taper_funnel", **S("3 · The access"),
-      title="Finding the needle: Thailand's company universe",
-      stages=[
-          {"name": "Registered juristic persons", "value": "1,989,709",
-           "description": "Every company ever registered in Thailand"},
-          {"name": "Operating today", "value": "993,373",
-           "description": "Half the registry is already defunct or dissolved"},
-          {"name": "Filing real revenue", "value": "648,304",
-           "description": "Revenue above zero in FY2025"},
-          {"name": "SME band ฿10M-1B", "value": "176,962",
-           "description": "The deal size this webinar is about"},
-          {"name": "Core ฿100M-1B", "value": "37,045",
-           "description": "Only 1 in 18 revenue-reporting companies"},
-          {"name": "Your shortlist", "value": "10-30",
-           "description": "What a focused thesis produces"},
-      ],
-      chip="1 in 18 companies sits in the core band",
-      source=SRC_MAXDATA)
-
-b.add("ceilings", **S("3 · The access"),
-      title="How everyone finds deals today, and where each channel stops",
-      takeaway="Each channel works. Each has a ceiling you will hit.",
-      channels=[
-          {"name": "Word of mouth", "value": "2-3", "value_label": "DEALS A YEAR", "ceiling": "2-3 deals a year, if lucky",
-           "note": "Friends, suppliers, golf partners. High trust, tiny reach"},
-          {"name": "Online listings", "value": "100s", "value_label": "LISTINGS, UNEVEN QUALITY", "ceiling": "the good ones go fast",
-           "note": "Marketplaces and brokers' sites. Wide reach, uneven quality"},
-          {"name": "Intermediaries", "value": "1", "value_label": "MANDATE AT A TIME", "ceiling": "needs a clear mandate",
-           "note": "Advisors and boutique firms. Screened deals, real process"},
-      ],
-      breakout="Breaking every ceiling at once is what the next four slides are about",
-      source="Max Solutions market observation")
-
-b.add("access_ladder", **S("3 · The access"),
-      title="Our answer: three doors, one ecosystem",
-      steps=[
-          {"kicker": "Door 1 · Community", "icon": _ic("door-white"), "stat": "80,000+ members",
-           "bullets": ["DealFlow Facebook community",
-                       "Off-market chatter surfaces here first"]},
-          {"kicker": "Door 2 · Marketplace", "icon": _ic("door-white"), "stat": "100+ live deals",
-           "bullets": ["DealFlow Market listings",
-                       "Screened sellers, 15 industries"]},
-          {"kicker": "Door 3 · Advisory", "icon": _ic("door-white"), "stat": "150+ SMEs/yr",
-           "bullets": ["Full-mandate M&A advisory",
-                       "Our deal team runs it end to end"]},
-      ],
-      source="Max Solutions, July 2026")
-
-b.add("screenshot_slide", **S("3 · The access"),
-      title="Inside the community: where off-market deals surface",
-      placeholder_label="Screenshot: DealFlow Facebook community",
-      image_path="/home/user/mckinsey-pptx/webinar/assets/shots/dealflow-community.png",
-      image_caption="Illustrative preview. The real group lives on Facebook: DealFlow by Max Solutions",
-      kicker="Door 1 · Community",
-      claim="Sellers test the water here before any listing exists",
-      bullets=["The most active SME M&A community in Thailand, and free to join",
-               "Owners, buyers, and advisors in one room",
-               "Posts are occasional, but this is where sellers surface first"],
-      overlap_stat={"value": "80,000+", "label": "community members"},
-      layout_mode="right",
-      source="DealFlow community, July 2026")
-
-b.add("screenshot_slide", **S("3 · The access"),
-      title="Inside DealFlow Market: screened deals, real numbers",
-      placeholder_label="Screenshot: DealFlow Market listings page",
-      image_path="/home/user/mckinsey-pptx/webinar/assets/shots/dealflow-market.png",
-      image_caption="dealflowmarket.com/listing, live capture July 2026",
-      kicker="Door 2 · Marketplace",
-      claim="Every listing verified before it goes up",
-      bullets=["Real asking prices, real revenue, real provinces",
-               "Filter by sector, size, and location"],
-      stats=[{"value": "100+", "label": "live deals"},
-             {"value": "15", "label": "industries"}],
-      layout_mode="left",
-      source="DealFlow Market, July 2026")
-
-b.add("metro_line", **S("3 · The access"),
-      title="Max Data: our AI analytics platform, built for every stage",
-      stops=[
-          {"name": "Research", "icon": _ic("chip"),
-           "description": "Market and industry trends"},
-          {"name": "Source", "icon": _ic("target"),
-           "description": "Filter to targets that fit your thesis"},
-          {"name": "Validate", "icon": _ic("book"),
-           "description": "10 years of financials on any company"},
-          {"name": "Diligence", "icon": _ic("magnifier"),
-           "description": "Directors, licences, branches, contracts"},
-          {"name": "Reach", "icon": _ic("handshake"),
-           "description": "Contact the actual decision maker"},
-      ],
-      input_note="1.99M companies in",
-      output_note="the decision maker out",
-      source="Max Data platform, July 2026")
-
-b.add("screenshot_slide", **S("3 · The access"),
-      title="Max Data in 90 seconds",
-      placeholder_label="Screenshot or live demo: Max Data screener",
-      placeholder_note="Suggested demo: Logistics, revenue ฿10M-1B → 9,399 live targets",
-      image_path=("/home/user/mckinsey-pptx/webinar/assets/shots/maxdata-screener.png"
-                  if __import__("os").path.exists(
-                      "/home/user/mckinsey-pptx/webinar/assets/shots/maxdata-screener.png")
-                  else None),
-      image_caption="Max Data screener: Logistics, ฿10M-1B revenue → 9,399 companies",
-      claim="Type a thesis. Get a board-ready target list in one afternoon.",
-      stats=[{"value": "1.99M", "label": "companies tracked"},
-             {"value": "9.8M", "label": "financial statements"},
-             {"value": "100k+", "label": "companies with director contacts"}],
-      layout_mode="hero",
-      source="Max Data platform, July 2026")
-
-b.add("screenshot_slide", **S("3 · The access"),
-      title="Step 1: size the niche before you pick a target",
-      placeholder_label="Screenshot: Max Data market page",
-      image_path=f"{ASSETS}/shots/md-market-top.png",
-      image_caption="Max Data market page, TSIC 49331: road transport of refrigerated freight",
-      kicker="Cold chain, worked example",
-      claim="484 companies, ฿5.9B, and nobody owns it",
-      bullets=["Market size, growth and survival rate for any of 1,265 industry codes",
-               "Concentration score says perfect competition, so no incumbent blocks a new entrant",
-               "The top ten are ranked for you, which is where a buy-side shortlist starts"],
-      stats=[{"value": "484", "label": "registered companies"},
-             {"value": "฿5.9B", "label": "market revenue"},
-             {"value": "83.5%", "label": "survival rate"}],
-      layout_mode="hero",
-      shot_width=11.9,
-      source="Max Data market module, July 2026")
-
-b.add("screenshot_slide", **S("3 · The access"),
-      title="Step 2: open the leader and read twenty years in one screen",
-      placeholder_label="Screenshot: Max Data company page",
-      image_path=f"{ASSETS}/shots/md-company-header.png",
-      image_caption="Max Data company page. Every figure traces to a filed statement",
-      kicker="Cold chain, worked example",
-      claim="What they do, what they own, and who sits on the board",
-      bullets=["Revenue, profit, assets and equity with the year-on-year move",
-               "Registered capital, company age, exact TSIC code and address",
-               "The board, so you already know the name before you reach out"],
-      stats=[{"value": "฿995.8M", "label": "FY2025 revenue, +37.1%"},
-             {"value": "20.44%", "label": "20-year revenue CAGR"},
-             {"value": "16.86%", "label": "share of its TSIC"}],
-      layout_mode="hero",
-      shot_width=11.9,
-      source="Max Data company page, TO.TOO Chiang Mai Seafood, July 2026")
-
-b.add("screenshot_slide", **S("3 · The access"),
-      title="Step 3: turn a name on a board into an email you can send",
-      placeholder_label="Screenshot: Max Data E-Finding",
-      image_path=f"{ASSETS}/shots/maxdata-efinding-blur.png",
-      image_caption="Max Data E-Finding. Name and result masked here for privacy, live in the product",
-      shot_width=10.8,
-      kicker="Cold chain, worked example",
-      claim="The last mile most buyers never cross",
-      bullets=["Give the engine a director name and the company domain",
-               "It generates, cross-references and confirms, then stops when it is sure",
-               "You reach the decision maker, not a general enquiries inbox"],
-      stats=[{"value": "100k+", "label": "companies with contacts"},
-             {"value": "High", "label": "confidence on this result"},
-             {"value": "1 click", "label": "single or bulk CSV"}],
-      layout_mode="hero",
-      source="Max Data E-Finding, July 2026")
-
-b.add("screenshot_slide", **S("3 · The access"),
-      title="All of it in one workflow, in one day",
-      placeholder_label="Screenshot: Max Data research cockpit",
-      image_path="/home/user/mckinsey-pptx/webinar/assets/shots/maxdata-cockpit.png",
-      image_caption="Max Data research cockpit. Verification and contact columns are generated per company, then checked against the registry",
-      kicker="Thesis to contact, one workflow",
-      claim="Thesis, research and contact in a single sheet",
-      bullets=["A typical team needs more than a week to build a list and "
-               "find the contacts, working across three or four tools",
-               "Here it is one question, one sheet, and every column is "
-               "labelled with where the answer came from",
-               "Built on Max Data and run by AI, with a human approving "
-               "each step"],
-      stats=[{"value": "1 day", "label": "thesis to call list"},
-             {"value": "1 week+", "label": "the manual alternative"},
-             {"value": "1 sheet", "label": "instead of four tools"}],
-      layout_mode="hero",
-      shot_width=11.9,
-      source="Max Data research cockpit, July 2026. Director details are public registry records")
 
 # =====================================================================
 # SECTION 4 · HOW A DEAL RUNS
@@ -757,35 +762,36 @@ b.add("stat_hero_split", **S("5 · Proof"),
 
 b.add("case_slide", **S("5 · Proof"),
       title="Case one: the fire-safety distributor",
-      case_name="Project FireGuard · closed Q1 2026",
+      case_name="Project FireGuard · closed Q4 2025",
       sector_chip="FIRE SAFETY / TRADING",
       situation=["Husband-and-wife owners near retirement, no successor",
-                 "฿100M revenue, ฿30M operating profit, decades of relationships",
-                 "One of only 112 registered fire-safety distributors in Thailand"],
-      outcome=["New owner modernized systems within months",
-               "Employees stayed, morale improved",
-               "Owners exited proud, business on an IPO-track plan"],
+                 "฿100M to ฿200M revenue, ฿30M to ฿50M operating profit",
+                 "Decades of trade relationships, run entirely on the owners"],
+      outcome=["New owner installed an ERP system and tracked inventory properly",
+               "That surfaced the handful of products actually driving revenue",
+               "Focused on those, and earnings are now on a double-digit growth track"],
       bridge_stat="< 6 months to visible turnaround",
-      kpis=[{"value": "฿100M", "label": "Revenue at deal"},
-            {"value": "฿30M", "label": "EBITDA (operating profit) at deal"},
-            {"value": "112", "label": "registered fire-safety distributors"}],
-      photo_label=None,
+      kpis=[{"value": "฿100-200M", "label": "Revenue at deal"},
+            {"value": "฿30-50M", "label": "Operating profit at deal"},
+            {"value": "Double digit", "label": "earnings growth on track"}],
+      photo_path=f"{GEN}/scenes/case-fire.png",
       source="Max Solutions deal team, 2026. Figures approximate to protect the parties")
 
 b.add("case_slide", **S("5 · Proof"),
       title="Case two: the pizza-oven supplier",
-      case_name="Project Pizza Oven · closed Q1 2026",
+      case_name="Project Pizza Oven · cross-border buyer",
       sector_chip="F&B EQUIPMENT / SUPPLY",
-      situation=["Italian owner couple returning home after years in Thailand",
-                 "Supplier to major Thai restaurant chains",
-                 "Top-3 Google ranking in its niche, loyal recurring customers"],
-      outcome=["Foreign buyer acquired end to end through our process",
-               "Smooth handover, customers retained",
-               "Now on its way to doubling turnover"],
-      bridge_stat="2x turnover trajectory",
-      kpis=[{"value": "Top 3", "label": "Google rank in its niche"},
-            {"value": "94", "label": "kitchen-equipment suppliers nationwide"},
-            {"value": "2x", "label": "turnover trajectory after handover"}],
+      situation=["One of Thailand's top pizza-oven manufacturers and distributors",
+                 "Already profitable, with over 6 months of pre-orders on the book",
+                 "Owners returning home, and short of the capital to expand production"],
+      outcome=["An overseas buyer acquired it end to end through our process",
+               "Fresh capital expanded production to meet the waiting demand",
+               "Lead time is coming down from 6 months toward 1 to 2 months"],
+      bridge_stat="6 months of backlog, unlocked",
+      kpis=[{"value": "6 to 1-2 mo", "label": "lead time after the capital went in"},
+            {"value": "Double digit", "label": "revenue growth expected"},
+            {"value": "Cross-border", "label": "overseas buyer, Thai target"}],
+      photo_path=f"{GEN}/scenes/case-oven.png",
       source="Max Solutions deal team, 2026. Figures approximate to protect the parties")
 
 _sl_caus = b.add("causality_band", **S("5 · Proof"),
@@ -855,21 +861,21 @@ b.add("service_spectrum", **S("6 · Next step"),
       axis_left="We carry the work",
       axis_right="You run it yourself",
       lanes=[
-          {"icon": _ic("handshake-white"), "kicker": "Full-mandate advisory",
-           "name": "Max Solutions",
+          {"logo": f"{ASSETS}/maxsolutions-logo.png", "site": "maxsolutions.co.th",
+           "kicker": "Full-mandate advisory", "name": "Max Solutions",
            "line": "We do everything with you: research, sourcing, "
                    "negotiation, close.",
            "bullets": ["A dedicated deal team on your mandate end to end",
                        "You decide, we run the machine"],
            "stat": "150+", "stat_label": "SME mandates a year"},
-          {"icon": _ic("storefront-white"), "kicker": "Screened marketplace",
-           "name": "DealFlow Market",
+          {"logo": f"{ASSETS}/logos/dealflow-logo.png", "site": "dealflowmarket.com",
+           "kicker": "Screened marketplace", "name": "DealFlow Market",
            "line": "You screen the deals yourself, we keep them real.",
            "bullets": ["Live, verified listings with real numbers",
                        "Move at your own shortlist speed"],
            "stat": "100+", "stat_label": "live deals across 15 industries"},
-          {"icon": _ic("chip"), "kicker": "Self-serve platform",
-           "name": "Max Data",
+          {"logo": f"{ASSETS}/logos/maxdata-logo.png", "site": "maxdatathailand.com",
+           "kicker": "Self-serve platform", "name": "Max Data",
            "line": "Your own research desk for the Thai market.",
            "bullets": ["Research, source, and track targets on your own",
                        "Local intelligence and decision-maker reach built in"],
@@ -945,6 +951,79 @@ b.add("vertical_ladder", **S("Appendix"),
            "description": "Transition plan for team, customers, suppliers"},
       ],
       source="Max Solutions sell-side playbook")
+
+b.add("mandate_grid", **S("Appendix"),
+      title="Live mandates we are running right now",
+      subtitle="A sample of current sell-side engagements. Project names are anonymized, figures are as presented by the seller",
+      groups=[
+          {"sector": "Food & beverage", "rows": [
+              {"project": "Michelin", "what": "Michelin-guided fine dining restaurant",
+               "rev": "฿11.6M", "ebitda": "฿3.5M", "ask": "฿27M"},
+              {"project": "1MK", "what": "Korean BBQ buffet restaurant chain",
+               "rev": "฿52.2M", "ebitda": "฿9.1M", "ask": "฿40M"},
+              {"project": "MooPing", "what": "Thai grilled skewer chain",
+               "rev": "฿19.5M", "ebitda": "฿3.0M", "ask": "฿25M"},
+              {"project": "OceanFreeze", "what": "Seafood processor and distributor",
+               "rev": "฿47.4M", "ebitda": "฿3.7M", "ask": "฿45M"}]},
+          {"sector": "Healthcare & aesthetics", "rows": [
+              {"project": "Oasis", "what": "One-stop aesthetic and wellness clinic",
+               "rev": "฿11.1M", "ebitda": "฿1.6M", "ask": "฿15M"},
+              {"project": "Aura8", "what": "Aesthetics clinic platform, 8 branches",
+               "rev": "฿97.6M", "ebitda": "฿23.3M", "ask": "฿150M"},
+              {"project": "Glowshot", "what": "Two-branch aesthetics clinic platform",
+               "rev": "฿77.6M", "ebitda": "฿26.3M", "ask": "฿150M"},
+              {"project": "Dental2", "what": "Two-branch dental clinics in Bangkok",
+               "rev": "฿30.0M", "ebitda": "฿7.0M", "ask": "฿40M"}]},
+      ],
+      note="Every mandate here came to us through the same three doors you saw tonight.",
+      source="Max Solutions live mandate book, July 2026")
+
+b.add("mandate_grid", **S("Appendix"),
+      title="Live mandates, continued",
+      subtitle="Manufacturing, industrials, consumer and services",
+      groups=[
+          {"sector": "Manufacturing & industrials", "rows": [
+              {"project": "SteelFaceTech", "what": "Hardfacing steel plate manufacturer",
+               "rev": "฿102.2M", "ebitda": "฿13.9M", "ask": "฿180M"}]},
+          {"sector": "Construction & infrastructure", "rows": [
+              {"project": "TwinLift", "what": "Full-service industrial crane and lifting provider",
+               "rev": "฿105.0M", "ebitda": "฿13.0M", "ask": "฿120M"},
+              {"project": "SkyLift", "what": "Aerial work platform rental operator",
+               "rev": "฿48.0M", "ebitda": "฿23.0M", "ask": "TBC"}]},
+          {"sector": "Consumer & retail", "rows": [
+              {"project": "CoreWear", "what": "Mass-market omnichannel fashion brand",
+               "rev": "฿76.7M", "ebitda": "฿10.4M", "ask": "฿55M"},
+              {"project": "ProSupply", "what": "Premium interior manufacturing and supply",
+               "rev": "฿48.3M", "ebitda": "฿9.5M", "ask": "฿80M"}]},
+          {"sector": "Logistics & services", "rows": [
+              {"project": "ThaiTransport", "what": "Full-service third-party logistics",
+               "rev": "฿90.2M", "ebitda": "฿28.6M", "ask": "฿270M"},
+              {"project": "2B Laundry", "what": "Laundromat franchisor, 20+ years operating",
+               "rev": "฿20.3M", "ebitda": "฿3.7M", "ask": "฿22M"},
+              {"project": "FlourTrading", "what": "Tapioca flour and agri commodity trading",
+               "rev": "฿365.0M", "ebitda": "฿18.0M", "ask": "฿120M"}]},
+      ],
+      note="Ask prices are the seller's opening position, not a valuation. Every one is negotiable.",
+      source="Max Solutions live mandate book, July 2026")
+
+b.add("stat_band", **S("Appendix"),
+      title="We also cover fintech and payments",
+      stats=[
+          {"glyph": "donut20", "value": "€60M",
+           "label": "company valuation on our most recent fintech mandate",
+           "context": "SaaS valuation platform for financial institutions"},
+          {"glyph": "bar80", "value": "~€6M",
+           "label": "growth equity raised, about a 10% stake",
+           "context": "Series A capital raise"},
+          {"glyph": "onethree", "value": "5",
+           "label": "sub-sectors we cover in payments and fintech",
+           "context": "acquiring, processing, embedded finance, lending, e-money"},
+          {"glyph": "steps", "value": "SaaS",
+           "label": "recurring-revenue models with bank and FI clients",
+           "context": "the segment buyers pay up for"},
+      ],
+      kicker="Dedicated coverage from transaction-processing infrastructure to SaaS platforms serving banks.",
+      source="Max Solutions fintech and payments practice")
 
 b.add("definition_list", **S("Appendix"),
       title="Glossary: five terms you heard tonight",

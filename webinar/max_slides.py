@@ -505,7 +505,7 @@ def add_case_slide(prs, *,
     # the transformation stat.
     col_top = top + band_h + 0.35
     col_h = 2.75
-    col_w = 5.0
+    col_w = 4.35
     right_left = layout.slide_width_in - layout.margin_right_in - col_w
 
     for col_left, head, items, accent in (
@@ -543,15 +543,14 @@ def add_case_slide(prs, *,
                         align=PP_ALIGN.CENTER, first=True)
         enable_text_shrink(tb.text_frame)
 
-    # Scene vignette in the centre gap, below the chevron bridge
+    # Scene panel filling the centre gap; the chevron bridges across it
     if photo_path and os.path.exists(photo_path):
         from editorial_slides import cover_crop
-        gap_left = layout.margin_left_in + col_w
-        gap_w = right_left - gap_left
-        crop = cover_crop(photo_path, gap_w - 0.1, 0.85)
-        slide.shapes.add_picture(crop, Inches(gap_left + 0.05), Inches(4.30),
-                                 width=Inches(gap_w - 0.1),
-                                 height=Inches(0.85))
+        gap_left = layout.margin_left_in + col_w + 0.18
+        gap_w = right_left - gap_left - 0.18
+        crop = cover_crop(photo_path, gap_w, col_h)
+        slide.shapes.add_picture(crop, Inches(gap_left), Inches(col_top),
+                                 width=Inches(gap_w), height=Inches(col_h))
 
     # Open stat band at the bottom, hairline separated
     kpi_top = col_top + col_h + 0.30
@@ -765,15 +764,29 @@ def add_thank_you(prs, *,
                         align=PP_ALIGN.CENTER, first=(j == 0), space_after=6)
 
     if contact_placeholder:
-        qs = 1.55
-        qx = layout.slide_width_in / 2 - qs / 2
-        if qr_block(slide, qx, 4.92, qs, theme, on_dark=True):
-            tb = add_textbox(slide, layout.slide_width_in / 2 - 2.2, 6.60,
-                             4.4, 0.30)
-            write_paragraph(tb.text_frame, "Scan to book a session",
-                            size=typo.small_size, color=pal.light_blue,
-                            family=typo.family, align=PP_ALIGN.CENTER,
-                            first=True)
+        qs = 1.42
+        gap = 1.30
+        line_qr = f"{ASSETS}/qr-line-group.png"
+        pair = os.path.exists(line_qr)
+        total = qs * 2 + gap if pair else qs
+        qx = layout.slide_width_in / 2 - total / 2
+        qy = 4.80
+        placed = qr_block(slide, qx, qy, qs, theme, on_dark=True)
+        if placed:
+            tb = add_textbox(slide, qx - 0.55, qy + qs + 0.16, qs + 1.1, 0.30)
+            write_paragraph(tb.text_frame, "Book a session",
+                            size=typo.small_size, bold=True,
+                            color=pal.light_blue, family=typo.family,
+                            align=PP_ALIGN.CENTER, first=True)
+            if pair:
+                lx = qx + qs + gap
+                qr_block(slide, lx, qy, qs, theme, on_dark=True, path=line_qr)
+                tb = add_textbox(slide, lx - 0.55, qy + qs + 0.16, qs + 1.1,
+                                 0.30)
+                write_paragraph(tb.text_frame, "Join the LINE group",
+                                size=typo.small_size, bold=True,
+                                color=pal.light_blue, family=typo.family,
+                                align=PP_ALIGN.CENTER, first=True)
         else:
             placeholder_box(slide, layout.slide_width_in / 2 - 1.1,
                             4.85, 2.2, 1.6, contact_placeholder, theme=theme)
@@ -784,7 +797,7 @@ def add_thank_you(prs, *,
 
 # ---------- bottom progress tracker ----------
 
-TRACKER_STOPS = ["WHY NOW", "THE LENS", "ACCESS", "THE PATH", "PROOF",
+TRACKER_STOPS = ["WHY NOW", "ACCESS", "THE LENS", "THE PATH", "PROOF",
                  "NEXT STEP"]
 
 
