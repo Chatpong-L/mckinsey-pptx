@@ -410,7 +410,7 @@ def add_screenshot_slide(prs, *,
             chip_w, chip_h = 1.9, 0.95
             total = chip_w * len(stats) + 0.35 * (len(stats) - 1)
             cx0 = (layout.slide_width_in - total) / 2
-            cy0 = 1.95 + sh - chip_h / 2
+            cy0 = 1.95 + sh - chip_h * 0.28
             for i, st in enumerate(stats):
                 cx = cx0 + i * (chip_w + 0.35)
                 add_rect(slide, cx, cy0, chip_w, chip_h, fill=pal.deep_navy)

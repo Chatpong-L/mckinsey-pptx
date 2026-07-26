@@ -81,6 +81,28 @@ def flatten_all_shadows(prs):
                 el.remove(style)
 
 
+
+def fix_baht_spacing(prs):
+    """LibreOffice renders the bold Thai baht glyph with a broken advance
+    width, so it collides with the digit after it. Insert a thin space after
+    every unspaced baht sign across the whole deck."""
+    THIN = "\u2009"
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if not shape.has_text_frame:
+                continue
+            for para in shape.text_frame.paragraphs:
+                for run in para.runs:
+                    t = run.text
+                    if "\u0e3f" in t:
+                        out = []
+                        for i, ch in enumerate(t):
+                            out.append(ch)
+                            if ch == "\u0e3f" and i + 1 < len(t) \
+                                    and t[i + 1] not in (" ", THIN, "\u00a0"):
+                                out.append(THIN)
+                        run.text = "".join(out)
+
 # ---------- shared devices ----------
 
 def takeaway_line(slide, text, theme: Theme = MAX_THEME, top=1.32):
@@ -2058,7 +2080,14 @@ def add_credits_slide(prs, *,
     finale gets its own set-apart moment."""
     slide = blank_slide(prs)
     pal, typo, layout = theme.palette, theme.typography, theme.layout
-
+    add_rect(slide, 0, 0, layout.slide_width_in, layout.slide_height_in,
+             fill=rgb("022859"))
+    bg = f"{ASSETS}/gen/backdrops/credits-warmth.png"
+    if os.path.exists(bg):
+        crop = cover_crop(bg, layout.slide_width_in, layout.slide_height_in)
+        slide.shapes.add_picture(crop, Inches(0), Inches(0),
+                                 width=Inches(layout.slide_width_in),
+                                 height=Inches(layout.slide_height_in))
     tb = add_textbox(slide, 0, 0.75, layout.slide_width_in, 0.35)
     write_paragraph(tb.text_frame, "WITH GRATITUDE", size=typo.body_size,
                     bold=True, color=pal.bright_blue, family=typo.family,
@@ -2076,21 +2105,21 @@ def add_credits_slide(prs, *,
         tb = add_textbox(slide, 2.2, y, 8.93, 0.34)
         write_paragraph(tb.text_frame, g["to"].upper(),
                         size=typo.small_size + 1, bold=True,
-                        color=pal.footer_gray, family=typo.family,
+                        color=pal.light_blue, family=typo.family,
                         align=PP_ALIGN.CENTER, first=True)
         tb = add_textbox(slide, 1.7, y + 0.34, 9.93, 0.52)
         write_paragraph(tb.text_frame, g["line"], size=typo.body_size + 2,
-                        color=pal.text_dark, family=typo.family,
+                        color=pal.white, family=typo.family,
                         align=PP_ALIGN.CENTER, first=True)
         enable_text_shrink(tb.text_frame)
         y += spacing
 
     # Finale: partner moment
-    add_line(slide, 4.4, y + 0.12, 8.93, y + 0.12, color=pal.grid_gray,
+    add_line(slide, 4.4, y + 0.12, 8.93, y + 0.12, color=pal.mid_blue,
              width_pt=0.75)
     tb = add_textbox(slide, 1.35, y + 0.35, 10.63, 0.85)
     write_paragraph(tb.text_frame, finale, size=20, italic=True,
-                    color=pal.dark_navy, family=typo.family,
+                    color=pal.white, family=typo.family,
                     align=PP_ALIGN.CENTER, first=True)
     enable_text_shrink(tb.text_frame)
     tb = add_textbox(slide, 0, y + 1.28, layout.slide_width_in, 0.5)
@@ -2098,7 +2127,7 @@ def add_credits_slide(prs, *,
     p.alignment = PP_ALIGN.CENTER
     r = p.add_run(); r.text = f"{finale_name}  "
     r.font.size = Pt(22); r.font.bold = True
-    r.font.color.rgb = pal.dark_navy; r.font.name = typo.family
+    r.font.color.rgb = pal.white; r.font.name = typo.family
     r2 = p.add_run(); r2.text = "♥"
     r2.font.size = Pt(20); r2.font.bold = True
     r2.font.color.rgb = pal.bright_blue; r2.font.name = typo.family
