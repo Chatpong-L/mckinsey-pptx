@@ -424,7 +424,7 @@ def add_sector_matrix(prs, *,
     total_w = layout.slide_width_in - left - layout.margin_right_in
     c_name, c_count, c_growth = left, left + 3.1, left + 5.8
     c_margin = left + 9.5
-    top = 1.85
+    top = 1.76
     # header row
     for x, label in ((c_name, "SECTOR"), (c_count, "OPERATING COMPANIES"),
                      (c_growth, "REVENUE GROWTH SINCE FY2020"),
@@ -435,7 +435,7 @@ def add_sector_matrix(prs, *,
     add_line(slide, left, top + 0.32, left + total_w, top + 0.32,
              color=pal.dark_navy, width_pt=1.0)
 
-    row_h = 1.02
+    row_h = 0.92
     max_growth = max(r["growth"] for r in rows)
     y = top + 0.45
     for i, r in enumerate(rows):
@@ -479,9 +479,14 @@ def add_sector_matrix(prs, *,
                      color=pal.grid_gray, width_pt=0.5)
         y += row_h + 0.10
     if callout:
-        tb = add_textbox(slide, left, y + 0.05, total_w, 0.32)
-        write_paragraph(tb.text_frame, callout, size=typo.body_size, bold=True,
-                        color=pal.bright_blue, family=typo.family, first=True)
+        by = layout.footer_top_in - 0.72
+        add_rect(slide, left, by, total_w, 0.52, fill=pal.deep_navy)
+        tb = add_textbox(slide, left + 0.28, by, total_w - 0.56, 0.52,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, callout, size=typo.body_size + 1,
+                        bold=True, color=pal.white, family=typo.family,
+                        first=True)
+        enable_text_shrink(tb.text_frame)
     return slide
 
 
@@ -519,7 +524,7 @@ def add_fork_road(prs, *,
         write_paragraph(tb.text_frame, lab, size=typo.small_size,
                         color=pal.footer_gray, family=typo.family,
                         align=PP_ALIGN.CENTER, first=True)
-    tb = add_textbox(slide, 1.7, oy - 1.05, 2.4, 0.32)
+    tb = add_textbox(slide, 2.55, oy - 1.02, 3.0, 0.32)
     write_paragraph(tb.text_frame, "ORGANIC: build it",
                     size=typo.body_size + 1, bold=True, color=STEEL,
                     family=typo.family, first=True)
@@ -544,8 +549,10 @@ def add_fork_road(prs, *,
     # Arrival square (shared destination size) reached early
     arr_x = 4.75
     add_rect(slide, arr_x, iy - 0.30, 0.6, 0.6, fill=pal.dark_navy)
-    add_line(slide, arr_x + 0.6, iy, end_x, iy, color=pal.grid_gray,
-             width_pt=1.0)
+    tb = add_textbox(slide, arr_x - 0.55, iy + 0.38, 1.7, 0.30)
+    write_paragraph(tb.text_frame, "Month 6", size=typo.small_size,
+                    bold=True, color=pal.dark_navy, family=typo.family,
+                    align=PP_ALIGN.CENTER, first=True)
     # Cyan flag at arrival
     add_line(slide, arr_x + 0.30, iy - 1.15, arr_x + 0.30, iy - 0.30,
              color=pal.bright_blue, width_pt=1.5)
@@ -563,6 +570,30 @@ def add_fork_road(prs, *,
                     family=typo.family, first=True)
     # Organic arrival square (far right)
     add_rect(slide, end_x, oy - 0.30, 0.6, 0.6, fill=STEEL)
+    tb = add_textbox(slide, end_x - 0.55, oy - 0.92, 1.7, 0.30)
+    write_paragraph(tb.text_frame, "Year 5+", size=typo.small_size,
+                    bold=True, color=STEEL, family=typo.family,
+                    align=PP_ALIGN.CENTER, first=True)
+    # same destination, spelled out once in the dead centre band
+    cmp_y = 5.28
+    tb = add_textbox(slide, 6.55, cmp_y - 0.36, 6.2, 0.28)
+    write_paragraph(tb.text_frame, "SAME DESTINATION, DIFFERENT PRICE",
+                    size=8.5, bold=True, color=pal.footer_gray,
+                    family=typo.family, first=True)
+    for lab, org, ino in (("TIME", "5 or more years", "6 to 12 months"),
+                          ("CASH", "Paid out slowly", "Paid up front"),
+                          ("RISK", "Will it work?", "Priced on what exists")):
+        tb = add_textbox(slide, 6.55, cmp_y, 1.35, 0.28)
+        write_paragraph(tb.text_frame, lab, size=8.5, bold=True,
+                        color=pal.footer_gray, family=typo.family, first=True)
+        tb = add_textbox(slide, 7.85, cmp_y, 2.35, 0.28)
+        write_paragraph(tb.text_frame, org, size=typo.small_size,
+                        color=STEEL, family=typo.family, first=True)
+        tb = add_textbox(slide, 10.25, cmp_y, 2.55, 0.28)
+        write_paragraph(tb.text_frame, ino, size=typo.small_size,
+                        bold=True, color=pal.bright_blue, family=typo.family,
+                        first=True)
+        cmp_y += 0.36
 
     # Time axis
     ty = 6.45
@@ -1527,6 +1558,19 @@ def add_ceilings(prs, *,
     for i, ch in enumerate(channels):
         x, h = xs[i], heights[i]
         add_rect(slide, x, base_y - h, col_w, h, fill=pal.dark_navy)
+        if ch.get("value"):
+            tb = add_textbox(slide, x, base_y - h + 0.22, col_w, 0.62,
+                             anchor=MSO_ANCHOR.MIDDLE)
+            write_paragraph(tb.text_frame, ch["value"], size=26, bold=True,
+                            color=pal.bright_blue, family=typo.family,
+                            align=PP_ALIGN.CENTER, first=True)
+            enable_text_shrink(tb.text_frame)
+            tb = add_textbox(slide, x, base_y - h + 0.84, col_w, 0.44)
+            write_paragraph(tb.text_frame, ch.get("value_label", ""),
+                            size=8.5, color=pal.light_blue,
+                            family=typo.family, align=PP_ALIGN.CENTER,
+                            first=True)
+            enable_text_shrink(tb.text_frame)
         # ceiling cap
         add_line(slide, x - 0.35, base_y - h - 0.12, x + col_w + 0.35,
                  base_y - h - 0.12, color=rgb("8A97A5"), width_pt=3.0)
@@ -1593,7 +1637,7 @@ def add_metro_line(prs, *,
         cx = left0 + i * step
         last = (i == n - 1)
         if st.get("icon") and os.path.exists(st["icon"]):
-            slide_icon(slide, st["icon"], cx - 0.30, y - 1.78, 0.60)
+            slide_icon(slide, st["icon"], cx - 0.28, y - 2.22, 0.56)
         add_oval(slide, cx - d / 2, y - d / 2, d, d,
                  fill=pal.bright_blue if last else pal.dark_navy)
         tb = add_textbox(slide, cx - d / 2, y - d / 2, d, d,
@@ -1611,15 +1655,31 @@ def add_metro_line(prs, *,
                         family=typo.family, align=PP_ALIGN.CENTER,
                         first=True)
         enable_text_shrink(tb.text_frame)
-    # input / output annotations
-    tb = add_textbox(slide, left0 - 1.35, y - 1.05, 2.6, 0.55)
+    # one connected in -> out sentence above the line
+    band_y = y - 1.30
+    add_rect(slide, left0 - 0.95, band_y, 3.35, 0.46, fill=pal.soft_gray)
+    tb = add_textbox(slide, left0 - 0.95, band_y, 3.35, 0.46,
+                     anchor=MSO_ANCHOR.MIDDLE)
     write_paragraph(tb.text_frame, input_note.upper(), size=typo.small_size,
-                    bold=True, color=pal.footer_gray, family=typo.family,
-                    first=True)
-    tb = add_textbox(slide, right0 - 1.15, y - 1.05, 2.6, 0.55)
+                    bold=True, color=pal.dark_navy, family=typo.family,
+                    align=PP_ALIGN.CENTER, first=True)
+    enable_text_shrink(tb.text_frame)
+    add_line(slide, left0 + 2.45, band_y + 0.23, right0 - 2.45,
+             band_y + 0.23, color=pal.grid_gray, width_pt=1.0)
+    tri = slide.shapes.add_shape(MSO_SHAPE.ISOSCELES_TRIANGLE,
+                                 Inches(right0 - 2.52), Inches(band_y + 0.14),
+                                 Inches(0.20), Inches(0.18))
+    tri.rotation = 90
+    tri.shadow.inherit = False
+    tri.fill.solid(); tri.fill.fore_color.rgb = pal.grid_gray
+    tri.line.fill.background()
+    add_rect(slide, right0 - 2.40, band_y, 3.35, 0.46, fill=pal.deep_navy)
+    tb = add_textbox(slide, right0 - 2.40, band_y, 3.35, 0.46,
+                     anchor=MSO_ANCHOR.MIDDLE)
     write_paragraph(tb.text_frame, output_note.upper(), size=typo.small_size,
                     bold=True, color=pal.bright_blue, family=typo.family,
-                    align=PP_ALIGN.RIGHT, first=True)
+                    align=PP_ALIGN.CENTER, first=True)
+    enable_text_shrink(tb.text_frame)
     return slide
 
 
@@ -1644,8 +1704,8 @@ def add_rising_road(prs, *,
                         color=pal.text_dark, family=typo.family, first=True)
 
     n = len(steps)
-    x0, y0 = 0.9, 5.85
-    x1, y1 = 11.9, 2.45
+    x0, y0 = 0.9, 5.95
+    x1, y1 = 11.9, 2.95
     pts = []
     for i in range(n):
         t = i / (n - 1)
