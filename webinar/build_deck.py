@@ -571,6 +571,26 @@ b.add("screenshot_slide", **S("3 · The access"),
       layout_mode="hero",
       source="Max Data platform, July 2026")
 
+b.add("screenshot_slide", **S("3 · The access"),
+      title="One thesis, one afternoon: cold-chain 3PL operators",
+      placeholder_label="Screenshot: Max Data research cockpit",
+      image_path="/home/user/mckinsey-pptx/webinar/assets/shots/maxdata-cockpit.png",
+      image_caption="Max Data research cockpit. Verification and contact columns are generated per company, then checked against the registry",
+      kicker="Worked example",
+      claim="From 44,190 logistics companies to 22 you could call tomorrow",
+      bullets=["We asked one question: which cold-chain operators are "
+               "credible and approachable acquisition targets",
+               "Every row carries what the company actually does, its "
+               "revenue, margin, and age, and a verified cold-chain flag",
+               "The last column is the decision maker, so outreach starts "
+               "the same day"],
+      stats=[{"value": "22", "label": "verified targets"},
+             {"value": "฿369M", "label": "largest in the set"},
+             {"value": "1 day", "label": "thesis to call list"}],
+      layout_mode="hero",
+      shot_width=11.9,
+      source="Max Data research cockpit, July 2026. Director details are public registry records")
+
 # =====================================================================
 # SECTION 4 · HOW A DEAL RUNS
 # =====================================================================

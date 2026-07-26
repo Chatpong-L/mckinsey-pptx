@@ -1,0 +1,251 @@
+<meta charset="utf-8">
+<title>Research Cockpit — Cold-Chain-Logistic</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font: 13px/1.45 -apple-system, "Segoe UI", "Noto Sans Thai", Helvetica, Arial, sans-serif;
+    color: #1b2430; background: #fff; width: 1920px;
+  }
+  .topbar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 24px 14px; border-bottom: 1px solid #e8ecf1;
+  }
+  .back { font-size: 20px; color: #6b7b8c; }
+  .titleblock h1 { font-size: 22px; font-weight: 700; letter-spacing: -.2px; }
+  .titleblock p { font-size: 13px; color: #8a97a5; margin-top: 3px; }
+  .spacer { flex: 1; }
+  .saved { color: #9aa6b3; font-size: 13px; margin-right: 4px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 1px solid #dfe5ec; border-radius: 8px;
+    padding: 8px 13px; font-size: 13px; font-weight: 600; color: #35404d;
+    background: #fff; white-space: nowrap;
+  }
+  .btn.ghost { color: #b7c0ca; }
+  .btn.dark { background: #10233c; border-color: #10233c; color: #fff; }
+  .body { display: flex; }
+  .side { width: 300px; padding: 20px 22px; border-right: 1px solid #e8ecf1; }
+  .tabs { display: flex; gap: 26px; margin-bottom: 26px; }
+  .tab { text-align: center; color: #7b8794; font-size: 12px; }
+  .tab .ic { font-size: 19px; display: block; margin-bottom: 5px; color: #55606d; }
+  .tab.on { color: #1b2430; font-weight: 600; }
+  .side h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .search {
+    display: flex; align-items: center; gap: 8px; border: 1px solid #dfe5ec;
+    border-radius: 8px; padding: 10px 12px; color: #a7b1bc; font-size: 13px;
+  }
+  .upload {
+    margin-top: 14px; border: 1px dashed #d3dbe4; border-radius: 8px;
+    padding: 14px; text-align: center; color: #5b6773; font-size: 13px;
+  }
+  .main { flex: 1; padding: 18px 0 0 20px; min-width: 0; }
+  .toolbar { display: flex; align-items: center; gap: 12px; padding-right: 24px; }
+  .field {
+    border: 1px solid #dfe5ec; border-radius: 8px; padding: 9px 14px;
+    font-size: 13px; color: #a7b1bc; width: 235px;
+  }
+  .rows { margin-left: auto; color: #9aa6b3; font-size: 13px; }
+  table { border-collapse: collapse; margin-top: 16px; width: 100%; table-layout: fixed; }
+  th, td {
+    border: 1px solid #e9edf2; padding: 11px 14px; text-align: left;
+    vertical-align: middle; overflow: hidden; white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  th {
+    font-size: 12.5px; font-weight: 600; color: #4a5764; background: #fff;
+    border-top: none;
+  }
+  th .g { color: #9aa6b3; margin-right: 6px; }
+  th.web .g { color: #2f7fd6; }
+  th.ai .g { color: #7b5cf0; }
+  td.num { font-family: "JetBrains Mono", ui-monospace, monospace; text-align: right; }
+  .co { display: flex; align-items: center; gap: 11px; }
+  .logo {
+    width: 26px; height: 26px; border-radius: 5px; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: #fff; letter-spacing: -.4px;
+  }
+  .co .nm { font-weight: 600; font-size: 13px; }
+  .co .id { color: #9aa6b3; font-size: 11.5px; font-family: ui-monospace, monospace; }
+  .badge {
+    display: inline-block; width: 17px; height: 17px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; text-align: center; line-height: 17px;
+    margin-right: 8px; vertical-align: middle;
+  }
+  .bH { background: #fdecc8; color: #a6741a; }
+  .bM { background: #e3e8ee; color: #5b6773; }
+  .bL { background: #fde3e3; color: #b0433a; }
+  .cell-txt { vertical-align: middle; font-size: 12.5px; }
+  .verify { background: #fffdf7; }
+  .contact { background: #fffdf7; }
+  .scroll { position: absolute; }
+</style>
+
+<div class="topbar">
+  <span class="back">&#8592;</span>
+  <div class="titleblock">
+    <h1>Cold-Chain-Logistic</h1>
+    <p>Which of these companies are credible, approachable acquisitio&hellip;</p>
+  </div>
+  <div class="spacer"></div>
+  <span class="saved">Saved</span>
+  <span class="btn ghost">&#8630; Undo</span>
+  <span class="btn ghost">&#8631; Redo</span>
+  <span class="btn">&#9744; Duplicate</span>
+  <span class="btn">&#8801; Trace</span>
+  <span class="btn dark">&#8615; Export</span>
+</div>
+
+<div class="body">
+  <div class="side">
+    <div class="tabs">
+      <div class="tab on"><span class="ic">+</span>Add</div>
+      <div class="tab"><span class="ic">&#8942;</span>Find</div>
+      <div class="tab"><span class="ic">&#9638;</span>Templates</div>
+      <div class="tab"><span class="ic">&#9634;</span>Views</div>
+    </div>
+    <h3>Search companies</h3>
+    <div class="search">&#9906;&nbsp; Name or part of a name</div>
+    <div class="upload">&#8593; Upload a CSV list</div>
+  </div>
+
+  <div class="main">
+    <div class="toolbar">
+      <div class="field">Search in sheet</div>
+      <span class="btn">+ Add column</span>
+      <span class="btn">&#8801; Filter</span>
+      <span class="rows">22 rows</span>
+    </div>
+
+    <table>
+      <colgroup>
+        <col style="width:34px"><col style="width:330px"><col style="width:420px">
+        <col style="width:130px"><col style="width:88px"><col style="width:96px">
+        <col style="width:210px"><col style="width:250px"><col style="width:120px">
+      </colgroup>
+      <tr>
+        <th></th>
+        <th>Company</th>
+        <th class="web"><span class="g">&#10003;</span>Key products / services</th>
+        <th class="web"><span class="g">&#10003;</span>Total rev&hellip;</th>
+        <th class="ai"><span class="g">&#9636;</span>N..</th>
+        <th class="web"><span class="g">&#10003;</span>Com&hellip;</th>
+        <th class="web"><span class="g">&#9673;</span>Cold Chain 3PL &nbsp;&#8964;</th>
+        <th class="web"><span class="g">&#9673;</span>Director email &hellip; &nbsp;&#8595;</th>
+        <th></th>
+      </tr>
+
+      <tr>
+        <td>&#9744;</td>
+        <td><div class="co"><span class="logo" style="background:#1f3f8f">808</span>
+          <span><span class="nm">TRIPLE EIGHT LOGISTICS CO., LTD.</span><br>
+          <span class="id">0105555090471</span></span></div></td>
+        <td>Domestic and international land transport of tempera&hellip;</td>
+        <td class="num">&#3647;369.2M</td>
+        <td class="num">7.1%</td>
+        <td class="num">13 yrs</td>
+        <td class="verify"><span class="badge bH">H</span><span class="cell-txt">Yes. The comp&hellip;</span></td>
+        <td class="contact"><span class="badge bH">H</span><span class="cell-txt">&#3603;&#3608;&#3585;&#3620;&#3625; &#3648;&#3629;&#3637;&#3656;&#3618;&#3617;&#3626;&#3585;&#3640;&#3621; &#8212;&hellip;</span></td>
+        <td>Pla&hellip;</td>
+      </tr>
+
+      <tr>
+        <td>&#9744;</td>
+        <td><div class="co"><span class="logo" style="background:#c8362c">L1E</span>
+          <span><span class="nm">LOGISTICS ONE EXPRESS COMPAN&hellip;</span><br>
+          <span class="id">0105556071496</span></span></div></td>
+        <td>Cross-border GMS truck transportation, sea, air, and r&hellip;</td>
+        <td class="num">&#3647;103.3M</td>
+        <td class="num">1.0%</td>
+        <td class="num">13 yrs</td>
+        <td class="verify"><span class="badge bM">M</span><span class="cell-txt">Yes. Logistics &hellip;</span></td>
+        <td class="contact"><span class="badge bH">H</span><span class="cell-txt">Voratat Tantimong&hellip;</span></td>
+        <td>Lo&hellip;</td>
+      </tr>
+
+      <tr>
+        <td>&#9744;</td>
+        <td><div class="co"><span class="logo" style="background:#2b6fb8">JL</span>
+          <span><span class="nm">JUPITER LOGISTICS (THAILAND) CO&hellip;</span><br>
+          <span class="id">0105532077940</span></span></div></td>
+        <td>International air and ocean freight forwarding, custo&hellip;</td>
+        <td class="num">&#3647;198.3M</td>
+        <td class="num">33.5%</td>
+        <td class="num">36 yrs</td>
+        <td class="verify"><span class="badge bH">H</span><span class="cell-txt">Yes. Jupiter Lo&hellip;</span></td>
+        <td class="contact"><span class="badge bH">H</span><span class="cell-txt">SAKSIT SOMSOOK &hellip;</span></td>
+        <td>Jap&hellip;</td>
+      </tr>
+
+      <tr>
+        <td>&#9744;</td>
+        <td><div class="co"><span class="logo" style="background:#2f8ac4">&#127754;</span>
+          <span><span class="nm">WHALE TRANS COMPANY LIMITED</span><br>
+          <span class="id">0305548001652</span></span></div></td>
+        <td>Road freight, container transport, temperature-contro&hellip;</td>
+        <td class="num">&#3647;186.1M</td>
+        <td class="num">0.2%</td>
+        <td class="num">20 yrs</td>
+        <td class="verify"><span class="badge bH">H</span><span class="cell-txt">Yes. Whale Tra&hellip;</span></td>
+        <td class="contact"><span class="badge bH">H</span><span class="cell-txt">PARMET LIMCHUV&hellip;</span></td>
+        <td>Wh&hellip;</td>
+      </tr>
+
+      <tr>
+        <td>&#9744;</td>
+        <td><div class="co"><span class="logo" style="background:#d94f2b">&#9650;</span>
+          <span><span class="nm">SCG NICHIREI LOGISTICS COMPAN&hellip;</span><br>
+          <span class="id">0105556091730</span></span></div></td>
+        <td>Cold chain logistics including multi-temperature stora&hellip;</td>
+        <td class="num">&#3647;339M</td>
+        <td class="num">3.7%</td>
+        <td class="num">12 yrs</td>
+        <td class="verify"><span class="badge bH">H</span><span class="cell-txt">Yes. SCG Nichir&hellip;</span></td>
+        <td class="contact"><span class="badge bL">L</span><span class="cell-txt">MASATAKA NAKAJI&hellip;</span></td>
+        <td>SC&hellip;</td>
+      </tr>
+
+      <tr>
+        <td>&#9744;</td>
+        <td><div class="co"><span class="logo" style="background:#0f7a5a">Co</span>
+          <span><span class="nm">COGISTICS COMPANY LIMITED</span><br>
+          <span class="id">0105550056916</span></span></div></td>
+        <td>Sourcing and distribution of frozen and canned fruits &hellip;</td>
+        <td class="num">&#3647;139.7M</td>
+        <td class="num">3.7%</td>
+        <td class="num">19 yrs</td>
+        <td class="verify"><span class="badge bH">H</span><span class="cell-txt">Yes. Cogistics &hellip;</span></td>
+        <td class="contact"><span class="badge bH">H</span><span class="cell-txt">LOPPANA KONGSE&hellip;</span></td>
+        <td>&nbsp;</td>
+      </tr>
+
+      <tr>
+        <td>&#9744;</td>
+        <td><div class="co"><span class="logo" style="background:#3d7fb5">&#127760;</span>
+          <span><span class="nm">GLOBAL MULTIMODAL LOGISTICS &hellip;</span><br>
+          <span class="id">0105565162962</span></span></div></td>
+        <td>Multimodal freight transportation services via rail, sea&hellip;</td>
+        <td class="num">&#3647;508.9K</td>
+        <td class="num">-2368.&hellip;</td>
+        <td class="num">3 yrs</td>
+        <td class="verify"><span class="badge bH">H</span><span class="cell-txt">Yes. Global Mu&hellip;</span></td>
+        <td class="contact"><span class="badge bL">L</span><span class="cell-txt">KOMSUN SAKSRIW&hellip;</span></td>
+        <td>PT&hellip;</td>
+      </tr>
+
+      <tr>
+        <td>&#9744;</td>
+        <td><div class="co"><span class="logo" style="background:#1f3f8f">KT</span>
+          <span><span class="nm">K-TRANS COLD CHAIN CO., LTD.</span><br>
+          <span class="id">0105548112233</span></span></div></td>
+        <td>Refrigerated warehousing and last-mile chilled distrib&hellip;</td>
+        <td class="num">&#3647;242.6M</td>
+        <td class="num">6.4%</td>
+        <td class="num">18 yrs</td>
+        <td class="verify"><span class="badge bH">H</span><span class="cell-txt">Yes. K-Trans op&hellip;</span></td>
+        <td class="contact"><span class="badge bH">H</span><span class="cell-txt">THANAWAT PHROM&hellip;</span></td>
+        <td>K-t&hellip;</td>
+      </tr>
+    </table>
+  </div>
+</div>

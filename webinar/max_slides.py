@@ -281,6 +281,7 @@ def add_screenshot_slide(prs, *,
                          bullets: Sequence[str] = (),
                          stats: Sequence[dict] = (),
                          layout_mode: str = "right",
+                         shot_width: Optional[float] = None,
                          overlap_stat: Optional[dict] = None,
                          page_number=None, section_marker=None,
                          source=None, footnote=None,
@@ -370,7 +371,17 @@ def add_screenshot_slide(prs, *,
                              color=pal.grid_gray, width_pt=0.75)
 
     if layout_mode == "hero":
-        sw, sh = 8.8, 4.35
+        if shot_width:
+            sw = shot_width
+            # size the frame so the image exactly fills the inner box
+            if image_path and os.path.exists(image_path):
+                from PIL import Image as _Im
+                _w, _h = _Im.open(image_path).size
+                sh = (sw - 0.06) * _h / _w + 0.30 + 0.06
+            else:
+                sh = sw * 0.52
+        else:
+            sw, sh = 8.8, 4.35
         sx = (layout.slide_width_in - sw) / 2
         if claim:
             tb = add_textbox(slide, layout.margin_left_in, 1.42,
