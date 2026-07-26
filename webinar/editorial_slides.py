@@ -327,8 +327,11 @@ def add_hbar_ranked(prs, *,
     top = 2.15
     row_h = 0.62
     gap = 0.28
+    has_notes = any(it.get("note") for it in items)
+    if has_notes:
+        row_h, gap = 0.74, 0.16
     max_val = max(abs(it["value"]) for it in items)
-    label_w = 2.9
+    label_w = 3.75 if has_notes else 2.9
     bar_area = (layout.slide_width_in - layout.margin_left_in
                 - layout.margin_right_in - label_w - 1.0)
     ramp = [rgb("0B2E5C"), rgb("14406F"), rgb("1D5282"), rgb("266495"),
@@ -354,15 +357,27 @@ def add_hbar_ranked(prs, *,
                             first=True)
         else:
             rx = layout.slide_width_in - layout.margin_right_in
+            note = it.get("note")
+            lab_h = 0.34 if note else row_h
             tb = add_textbox(slide, rx - label_w + 0.15, y, label_w - 0.15,
-                             row_h, anchor=MSO_ANCHOR.MIDDLE)
+                             lab_h, anchor=MSO_ANCHOR.MIDDLE)
             write_paragraph(tb.text_frame, it["label"], size=typo.body_size + 1,
                             bold=True, color=pal.dark_navy,
                             family=typo.family, align=PP_ALIGN.RIGHT,
                             first=True)
             enable_text_shrink(tb.text_frame)
+            if note:
+                tb = add_textbox(slide, rx - label_w + 0.15, y + lab_h,
+                                 label_w - 0.15, row_h - lab_h)
+                write_paragraph(tb.text_frame, note, size=typo.small_size,
+                                color=pal.footer_gray, family=typo.family,
+                                align=PP_ALIGN.RIGHT, first=True)
+                enable_text_shrink(tb.text_frame)
             bx = rx - label_w - bl
-            add_rect(slide, bx, y, bl, row_h, fill=SLATE)
+            dramp = [rgb("4A607A"), rgb("55708C"), rgb("64809B"),
+                     rgb("7590AA"), rgb("8AA1B8")]
+            add_rect(slide, bx, y, bl, row_h,
+                     fill=dramp[min(i, len(dramp) - 1)])
             tb = add_textbox(slide, bx - 1.07, y, 0.95, row_h,
                              anchor=MSO_ANCHOR.MIDDLE)
             write_paragraph(tb.text_frame, it["display"],
@@ -970,6 +985,125 @@ def add_audience_map(prs, *,
     return slide
 
 
+# ---------- 46b · end-to-end journey matrix ----------
+
+def add_journey_matrix(prs, *,
+                       title: str,
+                       takeaway: Optional[str] = None,
+                       steps: Sequence[str],
+                       lanes: Sequence[dict],
+                       legend: Optional[Sequence[dict]] = None,
+                       page_number=None, section_marker=None,
+                       source=None, footnote=None,
+                       theme: Theme = MAX_THEME):
+    """Who-does-what across the deck's own 6-step path, one row per lane.
+    lanes: [{name, kicker, best_for, cells:[...]}] where each cell is
+    'us' | 'shared' | 'you' | 'tool'."""
+    slide = blank_slide(prs)
+    add_chrome(slide, title=title, theme=theme, page_number=page_number,
+               section_marker=section_marker, source=source, footnote=footnote)
+    pal, typo, layout = theme.palette, theme.typography, theme.layout
+    if takeaway:
+        takeaway_line(slide, takeaway, theme)
+
+    ml = layout.margin_left_in
+    right = layout.slide_width_in - layout.margin_right_in
+    name_w = 2.75
+    best_w = 2.30
+    grid_x = ml + name_w
+    grid_w = right - best_w - 0.22 - grid_x
+    n = len(steps)
+    col_w = grid_w / n
+
+    # step headers
+    hy = 1.92
+    for i, st in enumerate(steps):
+        tb = add_textbox(slide, grid_x + i * col_w, hy, col_w - 0.08, 0.50)
+        write_paragraph(tb.text_frame, st.upper(), size=typo.small_size,
+                        bold=True, color=pal.footer_gray, family=typo.family,
+                        align=PP_ALIGN.CENTER, first=True)
+        enable_text_shrink(tb.text_frame)
+    tb = add_textbox(slide, right - best_w, hy, best_w, 0.30)
+    write_paragraph(tb.text_frame, "BEST FOR", size=typo.small_size,
+                    bold=True, color=pal.footer_gray, family=typo.family,
+                    first=True)
+    add_line(slide, ml, hy + 0.54, right, hy + 0.54, color=pal.dark_navy,
+             width_pt=1.0)
+
+    row_h = 1.16
+    y = hy + 0.70
+    for r, ln in enumerate(lanes):
+        cy = y + row_h / 2
+        tb = add_textbox(slide, ml, cy - 0.44, name_w - 0.2, 0.28)
+        write_paragraph(tb.text_frame, ln["kicker"].upper(),
+                        size=typo.small_size, bold=True,
+                        color=pal.bright_blue, family=typo.family, first=True)
+        tb = add_textbox(slide, ml, cy - 0.16, name_w - 0.2, 0.36)
+        write_paragraph(tb.text_frame, ln["name"], size=typo.body_size + 3,
+                        bold=True, color=pal.dark_navy, family=typo.family,
+                        first=True)
+        enable_text_shrink(tb.text_frame)
+        for i, cell in enumerate(ln["cells"]):
+            cx = grid_x + i * col_w
+            bar_x, bar_w = cx + 0.10, col_w - 0.28
+            bh = 0.40
+            by = cy - bh / 2
+            if cell == "us":
+                add_rect(slide, bar_x, by, bar_w, bh, fill=pal.deep_navy)
+                lab, lc = "We do it", pal.white
+            elif cell == "shared":
+                add_rect(slide, bar_x, by, bar_w, bh, fill=rgb("D7E5F0"))
+                add_rect(slide, bar_x, by, 0.11, bh, fill=pal.mid_blue)
+                lab, lc = "Together", pal.dark_navy
+            elif cell == "tool":
+                add_rect(slide, bar_x, by, bar_w, bh, fill=pal.bright_blue)
+                lab, lc = "Platform", rgb("022859")
+            else:
+                add_rect(slide, bar_x, by, bar_w, bh, fill=None,
+                         line=pal.grid_gray, line_width=1.0)
+                lab, lc = "You", pal.footer_gray
+            tb = add_textbox(slide, bar_x, by, bar_w, bh,
+                             anchor=MSO_ANCHOR.MIDDLE)
+            write_paragraph(tb.text_frame, lab, size=8.5, bold=True,
+                            color=lc, family=typo.family,
+                            align=PP_ALIGN.CENTER, first=True)
+            enable_text_shrink(tb.text_frame)
+        tb = add_textbox(slide, right - best_w, cy - 0.34, best_w, 0.70,
+                         anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, ln["best_for"],
+                        size=typo.body_size - 1, color=pal.text_dark,
+                        family=typo.family, first=True)
+        enable_text_shrink(tb.text_frame)
+        if r < len(lanes) - 1:
+            add_line(slide, ml, y + row_h, right, y + row_h,
+                     color=pal.grid_gray, width_pt=0.75)
+        y += row_h
+
+    if legend:
+        ly = y + 0.26
+        lx = ml
+        for item in legend:
+            key = item["key"]
+            kw_, kh = 0.40, 0.22
+            if key == "us":
+                add_rect(slide, lx, ly + 0.05, kw_, kh, fill=pal.deep_navy)
+            elif key == "shared":
+                add_rect(slide, lx, ly + 0.05, kw_, kh, fill=rgb("D7E5F0"))
+                add_rect(slide, lx, ly + 0.05, 0.09, kh, fill=pal.mid_blue)
+            elif key == "tool":
+                add_rect(slide, lx, ly + 0.05, kw_, kh, fill=pal.bright_blue)
+            else:
+                add_rect(slide, lx, ly + 0.05, kw_, kh, fill=None,
+                         line=pal.grid_gray, line_width=1.0)
+            tb = add_textbox(slide, lx + 0.52, ly, 3.1, 0.32)
+            write_paragraph(tb.text_frame, item["label"],
+                            size=typo.small_size, color=pal.footer_gray,
+                            family=typo.family, first=True)
+            enable_text_shrink(tb.text_frame)
+            lx += 0.52 + item.get("width", 2.05)
+    return slide
+
+
 # ---------- 46 · service spectrum (three lanes) ----------
 
 def add_service_spectrum(prs, *,
@@ -1083,19 +1217,20 @@ def add_chevron_flags(prs, *,
                       title: str,
                       subtitle: Optional[str] = None,
                       flags: Sequence[dict],
+                      ask: Optional[str] = None,
+                      rule: Optional[str] = None,
                       page_number=None, section_marker=None,
                       source=None, footnote=None,
                       theme: Theme = MAX_THEME):
-    """Five chevrons in a navy→cyan ramp, one-line descriptor under each.
-    flags: [{keyword, descriptor}]"""
+    """Five chevrons in a navy-to-cyan ramp. Each carries an icon, the
+    signal name, what strong looks like, and the question to ask the owner.
+    flags: [{keyword, descriptor, ask, icon}]"""
     slide = blank_slide(prs)
     add_chrome(slide, title=title, theme=theme, page_number=page_number,
                section_marker=section_marker, source=source, footnote=footnote)
     pal, typo, layout = theme.palette, theme.typography, theme.layout
     if subtitle:
-        tb = add_textbox(slide, layout.margin_left_in, 1.32, 11.0, 0.30)
-        write_paragraph(tb.text_frame, subtitle, size=typo.body_size,
-                        color=pal.footer_gray, family=typo.family, first=True)
+        takeaway_line(slide, subtitle, theme)
 
     n = len(flags)
     ramp = [rgb("0B2E5C"), rgb("124173"), rgb("19548A"), rgb("2067A1"),
@@ -1104,34 +1239,68 @@ def add_chevron_flags(prs, *,
     total_w = (layout.slide_width_in - layout.margin_left_in
                - layout.margin_right_in)
     chev_w = (total_w + (n - 1) * overlap) / n
-    chev_h = 1.15
-    cy = 3.0
+    chev_h = 1.30
+    cy = 2.15
     for i, f in enumerate(flags):
         x = layout.margin_left_in + i * (chev_w - overlap)
-        s = slide.shapes.add_shape(MSO_SHAPE.CHEVRON, Inches(x), Inches(cy),
-                                   Inches(chev_w), Inches(chev_h))
-        s.shadow.inherit = False
-        s.fill.solid(); s.fill.fore_color.rgb = ramp[i % len(ramp)]
-        s.line.fill.background()
-        tb = add_textbox(slide, x + 0.42, cy + 0.14, chev_w - 0.75, 0.36)
+        sh = slide.shapes.add_shape(MSO_SHAPE.CHEVRON, Inches(x), Inches(cy),
+                                    Inches(chev_w), Inches(chev_h))
+        sh.shadow.inherit = False
+        sh.fill.solid(); sh.fill.fore_color.rgb = ramp[i % len(ramp)]
+        sh.line.fill.background()
+        icon = f.get("icon")
+        if icon and os.path.exists(icon):
+            slide_icon(slide, icon, x + 0.44, cy + 0.20, 0.42)
+            kx = x + 0.44
+        else:
+            kx = x + 0.42
+        tb = add_textbox(slide, kx + 0.52, cy + 0.20, chev_w - 1.30, 0.40,
+                         anchor=MSO_ANCHOR.MIDDLE)
         write_paragraph(tb.text_frame, str(i + 1), size=typo.body_size + 4,
                         bold=True, color=pal.white, family=typo.family,
                         first=True)
-        tb = add_textbox(slide, x + 0.42, cy + 0.50, chev_w - 0.75, 0.55,
+        tb = add_textbox(slide, x + 0.42, cy + 0.68, chev_w - 0.75, 0.48,
                          anchor=MSO_ANCHOR.MIDDLE)
         write_paragraph(tb.text_frame, f["keyword"].upper(),
                         size=typo.body_size, bold=True, color=pal.white,
                         family=typo.family, first=True)
         enable_text_shrink(tb.text_frame)
-        # tick + descriptor
-        tick_x = x + chev_w / 2 - overlap / 2
-        add_line(slide, tick_x, cy + chev_h + 0.05, tick_x,
-                 cy + chev_h + 0.35, color=pal.grid_gray, width_pt=0.75)
-        tb = add_textbox(slide, x + 0.05, cy + chev_h + 0.42,
-                         chev_w - overlap - 0.10, 0.85)
-        write_paragraph(tb.text_frame, f["descriptor"],
-                        size=typo.body_size - 1, color=pal.text_dark,
+
+        col_x = x + 0.05
+        col_w = chev_w - overlap - 0.10
+        ty = cy + chev_h + 0.30
+        tb = add_textbox(slide, col_x, ty, col_w, 0.26)
+        write_paragraph(tb.text_frame, "STRONG LOOKS LIKE",
+                        size=8.5, bold=True, color=pal.footer_gray,
                         family=typo.family, align=PP_ALIGN.CENTER, first=True)
+        tb = add_textbox(slide, col_x, ty + 0.28, col_w, 0.80)
+        write_paragraph(tb.text_frame, f["descriptor"],
+                        size=typo.body_size, bold=True, color=pal.dark_navy,
+                        family=typo.family, align=PP_ALIGN.CENTER, first=True)
+        enable_text_shrink(tb.text_frame)
+        if f.get("ask"):
+            add_line(slide, col_x + 0.30, ty + 1.20, col_x + col_w - 0.30,
+                     ty + 1.20, color=pal.grid_gray, width_pt=0.75)
+            tb = add_textbox(slide, col_x, ty + 1.32, col_w, 0.26)
+            write_paragraph(tb.text_frame, "ASK THE OWNER", size=8.5,
+                            bold=True, color=pal.bright_blue,
+                            family=typo.family, align=PP_ALIGN.CENTER,
+                            first=True)
+            tb = add_textbox(slide, col_x, ty + 1.58, col_w, 0.86)
+            write_paragraph(tb.text_frame, f["ask"],
+                            size=typo.body_size - 1, italic=True,
+                            color=pal.text_dark, family=typo.family,
+                            align=PP_ALIGN.CENTER, first=True)
+            enable_text_shrink(tb.text_frame)
+    if rule:
+        by = 6.28
+        add_rect(slide, layout.margin_left_in, by, total_w, 0.52,
+                 fill=pal.deep_navy)
+        tb = add_textbox(slide, layout.margin_left_in + 0.3, by, total_w - 0.6,
+                         0.52, anchor=MSO_ANCHOR.MIDDLE)
+        write_paragraph(tb.text_frame, rule, size=typo.body_size + 1,
+                        bold=True, color=pal.white, family=typo.family,
+                        align=PP_ALIGN.CENTER, first=True)
         enable_text_shrink(tb.text_frame)
     return slide
 
@@ -1941,6 +2110,7 @@ _REGISTRY.update({
     "art_divider": add_art_divider,
     "audience_map": add_audience_map,
     "service_spectrum": add_service_spectrum,
+    "journey_matrix": add_journey_matrix,
     "route_map": add_route_map,
     "speaker_panels": add_speaker_panels,
     "hbar_ranked": add_hbar_ranked,
