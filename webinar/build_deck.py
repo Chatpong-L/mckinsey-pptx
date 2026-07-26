@@ -840,14 +840,14 @@ b.add("cta_slide", **S("6 · Next step"),
           {"num": 3, "icon": _ic("people"), "who": "Connectors & everyone", "action": "Join the DealFlow community",
            "detail": "80,000+ members. Refer a buyer or seller and our referral program pays you."},
       ],
-      bottom_actions=["Type 1 (buying), 2 (selling), or 3 (referring) in the chat, and our team follows up tomorrow",
-                      "Or scan the QR / add our LINE official account now"],
+      bottom_actions=["Scan the QR to claim one of tonight's five consultation slots",
+                      "Or type 1 (buying), 2 (selling), or 3 (referring) in the chat and we will send you the link"],
       qr_label="QR: booking page")
 
 b.add("qa_slide",
       bg_path=f"{GEN}/backdrops/qa-waves.png",
       line="Ask us anything. We stay until your questions run out.",
-      qr_caption="Scan to book · or type 1 / 2 / 3 in the chat")
+      qr_caption="Scan to claim one of five slots · or type 1 / 2 / 3 in the chat")
 
 b.add("credits_slide",
       groups=[

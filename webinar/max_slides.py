@@ -32,6 +32,21 @@ from mckinsey_pptx.builder import _REGISTRY
 from max_theme import MAX_THEME, PH_BORDER, PH_FILL, PH_TEXT
 
 ASSETS = __file__.rsplit("/", 1)[0] + "/assets"
+QR_BOOKING = f"{ASSETS}/qr-booking.png"
+
+
+def qr_block(slide, left_in, top_in, size_in, theme, on_dark=False,
+             path=QR_BOOKING):
+    """Real QR on a white quiet-zone plate. Falls back to the amber
+    placeholder if the code has not been generated yet."""
+    if not os.path.exists(path):
+        return False
+    if on_dark:
+        add_rect(slide, left_in - 0.09, top_in - 0.09, size_in + 0.18,
+                 size_in + 0.18, fill=theme.palette.white)
+    slide.shapes.add_picture(path, Inches(left_in), Inches(top_in),
+                             width=Inches(size_in), height=Inches(size_in))
+    return True
 LOGO = f"{ASSETS}/maxsolutions-logo.png"          # navy on transparent
 LOGO_WHITE = f"{ASSETS}/maxsolutions-logo-white.png"
 MAXDATA_ICON = f"{ASSETS}/maxdata-icon.png"
@@ -690,10 +705,11 @@ def add_cta_slide(prs, *,
     # QR placeholder on the right
     qr_left = layout.margin_left_in + rows_w + 0.55
     qr_w = layout.slide_width_in - layout.margin_right_in - qr_left
-    placeholder_box(slide, qr_left, top + 0.1, qr_w, qr_w, qr_label,
-                    "Scan to book", theme=theme)
+    if not qr_block(slide, qr_left, top + 0.1, qr_w, theme):
+        placeholder_box(slide, qr_left, top + 0.1, qr_w, qr_w, qr_label,
+                        "Scan to book", theme=theme)
     tb = add_textbox(slide, qr_left, top + 0.1 + qr_w + 0.08, qr_w, 0.3)
-    write_paragraph(tb.text_frame, "One scan, one booking page",
+    write_paragraph(tb.text_frame, "Scan to book your session",
                     size=typo.small_size, color=pal.footer_gray,
                     family=typo.family, align=PP_ALIGN.CENTER, first=True)
 
@@ -742,15 +758,25 @@ def add_thank_you(prs, *,
                     bold=True, color=pal.white, family=typo.family,
                     align=PP_ALIGN.CENTER, first=True)
 
-    tb = add_textbox(slide, 1.5, 4.15, layout.slide_width_in - 3.0, 1.3)
+    tb = add_textbox(slide, 1.5, 4.02, layout.slide_width_in - 3.0, 1.0)
     for j, l in enumerate(lines):
         write_paragraph(tb.text_frame, l, size=typo.body_size + 3,
                         color=pal.light_blue, family=typo.family,
                         align=PP_ALIGN.CENTER, first=(j == 0), space_after=6)
 
     if contact_placeholder:
-        placeholder_box(slide, layout.slide_width_in / 2 - 1.1,
-                        4.85, 2.2, 1.6, contact_placeholder, theme=theme)
+        qs = 1.55
+        qx = layout.slide_width_in / 2 - qs / 2
+        if qr_block(slide, qx, 4.92, qs, theme, on_dark=True):
+            tb = add_textbox(slide, layout.slide_width_in / 2 - 2.2, 6.60,
+                             4.4, 0.30)
+            write_paragraph(tb.text_frame, "Scan to book a session",
+                            size=typo.small_size, color=pal.light_blue,
+                            family=typo.family, align=PP_ALIGN.CENTER,
+                            first=True)
+        else:
+            placeholder_box(slide, layout.slide_width_in / 2 - 1.1,
+                            4.85, 2.2, 1.6, contact_placeholder, theme=theme)
     from editorial_slides import closing_strip
     closing_strip(slide, theme, height=0.7)
     return slide

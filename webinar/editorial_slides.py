@@ -1979,8 +1979,10 @@ def add_qa_slide(prs, *,
     write_paragraph(tb.text_frame, line, size=18, color=pal.white,
                     family=typo.family, first=True)
     enable_text_shrink(tb.text_frame)
-    placeholder_box(slide, 9.5, 2.1, 2.6, 2.6, "QR: booking page",
-                    theme=theme)
+    from max_slides import qr_block
+    if not qr_block(slide, 9.5, 2.1, 2.6, theme, on_dark=True):
+        placeholder_box(slide, 9.5, 2.1, 2.6, 2.6, "QR: booking page",
+                        theme=theme)
     tb = add_textbox(slide, 9.0, 4.85, 3.6, 0.55)
     write_paragraph(tb.text_frame, qr_caption, size=typo.small_size + 1,
                     color=pal.white, family=typo.family,
